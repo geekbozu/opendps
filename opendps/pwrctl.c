@@ -24,6 +24,7 @@
 
 #include "pwrctl.h"
 #include "dps-model.h"
+#include "pastunits.h"
 #include <gpio.h>
 #include <dac.h>
 
@@ -33,6 +34,8 @@
   */
 
 static uint32_t i_out, v_out, i_limit;
+static uint32_t A_ADC_K_COEF, A_ADC_C_COEF, A_DAC_K_COEF, A_DAC_C_COEF;
+static uint32_t V_ADC_K_COEF, V_ADC_C_COEF, V_DAC_K_COEF, V_DAC_C_COEF;
 static bool v_out_enabled;
 
 /** not static as it is referred to from hw.c for performance reasons */
@@ -42,9 +45,46 @@ uint32_t pwrctl_i_limit_raw;
   * @brief Initialize the power control module
   * @retval none
   */
-void pwrctl_init(void)
+void pwrctl_init(past_t *past)
 {
+    //Load constants from PAST here
+    uint32_t *p = 0;
+    uint32_t length;
+    if (past_read_unit(past, cal_A_ADC_K, (const void**) &p, &length))
+    {
+        A_ADC_K_COEF = *p;
+    }
+    if (past_read_unit(past, cal_A_ADC_C,(const void**) &p, &length))
+    {
+        A_ADC_C_COEF = *p;
+    }
+    if (past_read_unit(past, cal_A_DAC_K, (const void**) &p, &length))
+    {
+        A_DAC_K_COEF = *p;
+    }
+    if (past_read_unit(past, cal_A_DAC_C,(const void**) &p, &length))
+    {
+        A_DAC_C_COEF = *p;
+    }
+    if (past_read_unit(past, cal_V_ADC_K, (const void**) &p, &length))
+    {
+        V_ADC_K_COEF = *p;
+    }
+    if (past_read_unit(past, cal_V_ADC_C,(const void**) &p, &length))
+    {
+        V_ADC_C_COEF = *p;
+    }
+    if (past_read_unit(past, cal_V_DAC_K, (const void**) &p, &length))
+    {
+        V_DAC_K_COEF = *p;
+    }
+    if (past_read_unit(past, cal_V_DAC_C,(const void**) &p, &length))
+    {
+        V_DAC_C_COEF = *p;
+    }
+
     pwrctl_enable_vout(false);
+
 }
 
 /**
@@ -168,7 +208,8 @@ bool pwrctl_vout_enabled(void)
   */
 uint32_t pwrctl_calc_vin(uint16_t raw)
 {
-    return 16.746*(raw-1) + 64.112; /** @todo: -1 becuse the value needed trimming */
+    return V_ADC_K_COEF*raw + V_ADC_C_COEF;      /** @todo: Determine if we need seperate constants here. */
+    //return 16.746*(raw-1) + 64.112; /** @todo: -1 becuse the value needed trimming */
 }
 
 /**
@@ -178,7 +219,7 @@ uint32_t pwrctl_calc_vin(uint16_t raw)
   */
 uint32_t pwrctl_calc_vout(uint16_t raw)
 {
-    return V_ADC_K*raw + V_ADC_C;
+    return V_ADC_K_COEF*raw + V_ADC_C_COEF;
 }
 
 /**
@@ -188,7 +229,7 @@ uint32_t pwrctl_calc_vout(uint16_t raw)
   */
 uint16_t pwrctl_calc_vout_dac(uint32_t v_out_mv)
 {
-    uint32_t dac = V_DAC_K*v_out_mv + V_DAC_C;
+    uint32_t dac = V_DAC_K_COEF*v_out_mv + V_DAC_C_COEF;
     return dac & 0xfff; /** 12 bits */
 }
 
@@ -199,7 +240,7 @@ uint16_t pwrctl_calc_vout_dac(uint32_t v_out_mv)
   */
 uint32_t pwrctl_calc_iout(uint16_t raw)
 {
-    return A_ADC_K*raw + A_ADC_C;
+    return A_ADC_K_COEF*raw + A_ADC_C_COEF;
 }
 
 /**
@@ -209,7 +250,7 @@ uint32_t pwrctl_calc_iout(uint16_t raw)
   */
 uint16_t pwrctl_calc_ilimit_adc(uint16_t i_limit_ma)
 {
-    return (i_limit_ma - A_ADC_C) / A_ADC_K + 1;
+    return (i_limit_ma - A_ADC_C_COEF) / A_ADC_K_COEF + 1;
 }
 
 /**
@@ -221,6 +262,8 @@ uint16_t pwrctl_calc_ilimit_adc(uint16_t i_limit_ma)
   */
 uint16_t pwrctl_calc_iout_dac(uint32_t i_out_ma)
 {
-    uint32_t dac = A_DAC_K * i_out_ma + A_DAC_C;
+    uint32_t dac = A_DAC_K_COEF * i_out_ma + A_DAC_C_COEF;
     return dac & 0xfff; /** 12 bits */
 }
+
+

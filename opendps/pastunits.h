@@ -24,11 +24,18 @@
 
 #ifndef __PASTUNITS_H__
 #define __PASTUNITS_H__
-
 /** Parameters stored in flash */
 typedef enum {
     /** stored as [I_limit:16] | [V_out:16] */
     past_power = 1,
+    cal_A_ADC_K,
+    cal_A_ADC_C,
+    cal_A_DAC_K,
+    cal_A_DAC_C,
+    cal_V_DAC_K,
+    cal_V_DAC_C,
+    cal_V_ADC_K,
+    cal_V_ADC_C,
     /** stored as 0 or 1 */
     past_tft_inversion,
     /** stored as strings */

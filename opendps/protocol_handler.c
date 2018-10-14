@@ -1,18 +1,18 @@
-/* 
+/*
  * The MIT License (MIT)
- * 
+ *
  * Copyright (c) 2017 Johan Kanflo (github.com/kanflo)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -81,7 +81,7 @@ static command_status_t handle_query(void)
     ui_parameter_t *params;
     char value[16];
     uint32_t num_param = opendps_get_curr_function_params(&params);
-    
+
     const char* curr_func = opendps_get_curr_function_name();
 
     uint16_t i_out_raw, v_in_raw, v_out_raw;
@@ -155,7 +155,7 @@ static command_status_t handle_set_function(uint8_t *payload, uint32_t payload_l
     } else {
         emu_printf("Function %s not available\n", func_name);
     }
-    
+
     {
         DECLARE_FRAME(MAX_FRAME_LENGTH);
         PACK8(cmd_response | cmd_set_function);
@@ -223,6 +223,46 @@ static command_status_t handle_set_parameters(uint8_t *payload, uint32_t payload
     }
     return cmd_success_but_i_actually_sent_my_own_status_thank_you_very_much;
 }
+static command_status_t handle_set_calibration(uint8_t *payload, uint32_t payload_len)
+{
+    emu_printf("%s\n", __FUNCTION__);
+    char *name = 0, *value = 0;
+    command_t cmd;
+    set_param_status_t stats[OPENDPS_MAX_PARAMETERS];
+    uint32_t status_index = 0;
+    {
+        DECLARE_UNPACK(payload, payload_len);
+        UNPACK8(cmd);
+        (void) cmd;
+        do {
+            /** Extract all occurences of <name>=<value>\0 ... */
+            name = value = 0;
+            /** This is quite ugly, please don't look */
+            name = (char*) &_buffer[_pos];
+            _pos += strlen(name) + 1;
+            _remain -= strlen(name) + 1;
+            value = (char*) &_buffer[_pos];
+            _pos += strlen(value) + 1;
+            _remain -= strlen(value) + 1;
+            if (name && value) {
+                stats[status_index++] = opendps_set_calibration(name, value);
+            }
+        } while(_remain && status_index < OPENDPS_MAX_PARAMETERS);
+    }
+
+    {
+        DECLARE_FRAME(MAX_FRAME_LENGTH);
+        PACK8(cmd_response | cmd_set_parameters);
+        PACK8(1); // Always success
+        for (uint32_t i = 0; i < status_index; i++) {
+            PACK8(stats[i]);
+        }
+        FINISH_FRAME();
+        send_frame(_buffer, _length);
+    }
+    return cmd_success_but_i_actually_sent_my_own_status_thank_you_very_much;
+}
+
 
 static command_status_t handle_list_parameters(void)
 {
@@ -357,6 +397,8 @@ static void handle_frame(uint8_t *frame, uint32_t length)
                 emu_printf("Got pinged\n");
                 opendps_handle_ping();
                 break;
+            case cmd_set_calibration:
+                success = handle_set_calibration(payload,payload_len);
             case cmd_set_function:
                 success = handle_set_function(payload, payload_len);
                 break;

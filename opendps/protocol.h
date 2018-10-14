@@ -51,6 +51,7 @@ typedef enum {
     cmd_enable_output,
     cmd_list_functions,
     cmd_set_parameters,
+    cmd_set_calibration,
     cmd_list_parameters,
     cmd_temperature_report,
     cmd_response = 0x80

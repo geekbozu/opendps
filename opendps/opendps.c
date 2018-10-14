@@ -249,6 +249,48 @@ set_param_status_t opendps_set_parameter(char *name, char *value)
 }
 
 /**
+ * @brief      Sets Calibration Data
+ *
+ * @param      name Name of Const
+ * @value      value Value as String
+ *
+ * @return     Status of the operation
+ */
+set_param_status_t opendps_set_calibration(char *name, char *value)
+{
+    set_param_status_t status = ps_ok;
+    past_id_t param;
+    double cvalue = atof(value);
+    if(strcmp(name,"A_ADC_K")==0){
+        param = cal_A_ADC_K;
+    } else if(strcmp(name,"A_ADC_C")==0){
+        param = cal_A_ADC_C;
+    } else if(strcmp(name,"A_DAC_K")==0){
+        param = cal_A_DAC_K;
+    } else if(strcmp(name,"A_DAC_C")==0){
+        param = cal_A_DAC_C;
+   } else if(strcmp(name,"V_ADC_K")==0){
+       param = cal_V_ADC_K;
+    } else if(strcmp(name,"V_ADC_C")==0){
+        param = cal_V_ADC_C;
+    } else if(strcmp(name,"V_DAC_K")==0){
+        param = cal_V_DAC_K;
+    } else if(strcmp(name,"V_DAC_C")==0){
+        param = cal_V_DAC_K;
+    } else {
+        status = ps_not_supported;
+        return status;
+    }
+    // Re-init pwrctl with new Calibration Coefs.
+    if (!past_write_unit(&g_past, param, (void*) &cvalue, 8)) {
+        /** @todo: handle past write failures */
+    }
+
+    pwrctl_init(&g_past);
+    return status;
+}
+
+/**
  * @brief      Enable output of current function
  *
  * @param[in]  enable  Enable or disable
@@ -733,17 +775,7 @@ static void event_handler(void)
 int main(int argc, char const *argv[])
 {
     hw_init();
-    pwrctl_init(); // Must be after DAC init
-    event_init();
 
-#ifdef CONFIG_COMMANDLINE
-    dbg_printf("Welcome to OpenDPS!\n");
-    dbg_printf("Try 'help;' for, well, help (note the semicolon).\n");
-#endif // CONFIG_COMMANDLINE
-
-    tft_init();
-    delay_ms(50); // Without this delay we will observe some flickering
-    tft_clear();
 #ifdef DPS_EMULATOR
     dps_emul_init(&g_past, argc, argv);
 #else // DPS_EMULATOR
@@ -756,6 +788,18 @@ int main(int argc, char const *argv[])
         dbg_printf("Error: past init failed!\n");
         /** @todo Handle past init failure */
     }
+
+    pwrctl_init(&g_past); // Must be after DAC & Past init
+    event_init();
+
+#ifdef CONFIG_COMMANDLINE
+    dbg_printf("Welcome to OpenDPS!\n");
+    dbg_printf("Try 'help;' for, well, help (note the semicolon).\n");
+#endif // CONFIG_COMMANDLINE
+
+    tft_init();
+    delay_ms(50); // Without this delay we will observe some flickering
+    tft_clear();
 
     check_master_reset();
     read_past_settings();

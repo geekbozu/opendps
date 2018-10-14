@@ -24,7 +24,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-
+#include "past.h"
 #ifndef __PWRCTL_H__
 #define __PWRCTL_H__
 
@@ -32,9 +32,10 @@ extern uint32_t pwrctl_i_limit_raw;
 
 /**
   * @brief Initialize the power control module
+  * @param past module
   * @retval none
   */
-void pwrctl_init(void);
+void pwrctl_init(past_t *past);
 
 /**
   * @brief Set voltage output
@@ -129,5 +130,10 @@ uint16_t pwrctl_calc_ilimit_adc(uint16_t i_limit_ma);
   * @retval corresponding DAC value
   */
 uint16_t pwrctl_calc_iout_dac(uint32_t i_out_ma);
+
+
+/**
+ *
+ */
 
 #endif // __PWRCTL_H__
