@@ -256,11 +256,11 @@ set_param_status_t opendps_set_parameter(char *name, char *value)
  *
  * @return     Status of the operation
  */
-set_param_status_t opendps_set_calibration(char *name, char *value)
+set_param_status_t opendps_set_calibration(char *name, float *value)
 {
     set_param_status_t status = ps_ok;
-    past_id_t param;
-    double cvalue = atof(value);
+    past_id_t param=0;
+    float cvalue = *value;
     if(strcmp(name,"A_ADC_K")==0){
         param = cal_A_ADC_K;
     } else if(strcmp(name,"A_ADC_C")==0){
@@ -276,13 +276,16 @@ set_param_status_t opendps_set_calibration(char *name, char *value)
     } else if(strcmp(name,"V_DAC_K")==0){
         param = cal_V_DAC_K;
     } else if(strcmp(name,"V_DAC_C")==0){
-        param = cal_V_DAC_K;
+        param = cal_V_DAC_C;
     } else {
         status = ps_not_supported;
         return status;
     }
     // Re-init pwrctl with new Calibration Coefs.
-    if (!past_write_unit(&g_past, param, (void*) &cvalue, 8)) {
+    if (param){
+        past_erase_unit(&g_past, param);
+    }
+    if (!past_write_unit(&g_past, param, (void*) &cvalue, 4)) {
         /** @todo: handle past write failures */
     }
 

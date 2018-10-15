@@ -96,7 +96,7 @@ set_param_status_t opendps_set_parameter(char *name, char *value);
  *
  * @return     Status of the operation
  */
-set_param_status_t opendps_set_calibration(char *name, char *value);
+set_param_status_t opendps_set_calibration(char *name, float *value);
 
 /**
  * @brief      Enable output of current function

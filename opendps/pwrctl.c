@@ -25,6 +25,7 @@
 #include "pwrctl.h"
 #include "dps-model.h"
 #include "pastunits.h"
+#include "past.h"
 #include <gpio.h>
 #include <dac.h>
 
@@ -34,8 +35,14 @@
   */
 
 static uint32_t i_out, v_out, i_limit;
-static uint32_t A_ADC_K_COEF, A_ADC_C_COEF, A_DAC_K_COEF, A_DAC_C_COEF;
-static uint32_t V_ADC_K_COEF, V_ADC_C_COEF, V_DAC_K_COEF, V_DAC_C_COEF;
+static float A_ADC_K_COEF = A_ADC_K;
+static float A_ADC_C_COEF = A_ADC_C;
+static float A_DAC_K_COEF = A_DAC_K;
+static float A_DAC_C_COEF = A_DAC_C;
+static float V_ADC_K_COEF = V_ADC_K;
+static float V_ADC_C_COEF = V_ADC_C;
+static float V_DAC_K_COEF = V_DAC_K;
+static float V_DAC_C_COEF = V_DAC_C;
 static bool v_out_enabled;
 
 /** not static as it is referred to from hw.c for performance reasons */
@@ -47,13 +54,16 @@ uint32_t pwrctl_i_limit_raw;
   */
 void pwrctl_init(past_t *past)
 {
+    //pwrctl_enable_vout(false);
+   // return;
     //Load constants from PAST here
-    uint32_t *p = 0;
+    float *p = 0;
     uint32_t length;
     if (past_read_unit(past, cal_A_ADC_K, (const void**) &p, &length))
     {
         A_ADC_K_COEF = *p;
     }
+
     if (past_read_unit(past, cal_A_ADC_C,(const void**) &p, &length))
     {
         A_ADC_C_COEF = *p;

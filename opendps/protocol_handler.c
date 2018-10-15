@@ -223,10 +223,12 @@ static command_status_t handle_set_parameters(uint8_t *payload, uint32_t payload
     }
     return cmd_success_but_i_actually_sent_my_own_status_thank_you_very_much;
 }
+
 static command_status_t handle_set_calibration(uint8_t *payload, uint32_t payload_len)
 {
     emu_printf("%s\n", __FUNCTION__);
-    char *name = 0, *value = 0;
+    char *name = 0;
+    float *value = 0;
     command_t cmd;
     set_param_status_t stats[OPENDPS_MAX_PARAMETERS];
     uint32_t status_index = 0;
@@ -236,14 +238,14 @@ static command_status_t handle_set_calibration(uint8_t *payload, uint32_t payloa
         (void) cmd;
         do {
             /** Extract all occurences of <name>=<value>\0 ... */
-            name = value = 0;
+            name = 0;
             /** This is quite ugly, please don't look */
             name = (char*) &_buffer[_pos];
             _pos += strlen(name) + 1;
             _remain -= strlen(name) + 1;
-            value = (char*) &_buffer[_pos];
-            _pos += strlen(value) + 1;
-            _remain -= strlen(value) + 1;
+            value = (float*) &_buffer[_pos];
+            _pos += 5;
+            _remain -= 5;
             if (name && value) {
                 stats[status_index++] = opendps_set_calibration(name, value);
             }
@@ -252,7 +254,7 @@ static command_status_t handle_set_calibration(uint8_t *payload, uint32_t payloa
 
     {
         DECLARE_FRAME(MAX_FRAME_LENGTH);
-        PACK8(cmd_response | cmd_set_parameters);
+        PACK8(cmd_response | cmd_set_calibration);
         PACK8(1); // Always success
         for (uint32_t i = 0; i < status_index; i++) {
             PACK8(stats[i]);
@@ -397,13 +399,14 @@ static void handle_frame(uint8_t *frame, uint32_t length)
                 emu_printf("Got pinged\n");
                 opendps_handle_ping();
                 break;
-            case cmd_set_calibration:
-                success = handle_set_calibration(payload,payload_len);
-            case cmd_set_function:
+           case cmd_set_function:
                 success = handle_set_function(payload, payload_len);
                 break;
             case cmd_list_functions:
                 success = handle_list_functions();
+                break;
+            case cmd_set_calibration:
+                success = handle_set_calibration(payload, payload_len);
                 break;
             case cmd_set_parameters:
                 success = handle_set_parameters(payload, payload_len);

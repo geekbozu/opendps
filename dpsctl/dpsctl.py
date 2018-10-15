@@ -335,7 +335,7 @@ def handle_response(command, frame, args):
 
     if args.json:
         print(json.dumps(_json, indent=4, sort_keys=True))
- 
+
     return ret_dict
 
 """
@@ -403,6 +403,12 @@ def handle_commands(args):
             communicate(comms, create_enable_output(args.enable), args)
         else:
             fail("enable is 'on' or 'off'")
+    if args.calibration:
+        payload = create_set_calibration(args.calibration)
+        if payload:
+            communicate(comms,payload,args)
+        else:
+            fail("malformatted parameters")
 
     if args.parameter:
         payload = create_set_parameter(args.parameter)
@@ -594,6 +600,7 @@ def main():
     parser.add_argument('-F', '--list-functions', action='store_true', help="List available functions")
     parser.add_argument('-p', '--parameter', nargs='+', help="Set function parameter <name>=<value>")
     parser.add_argument('-P', '--list-parameters', action='store_true', help="List function parameters of active function")
+    parser.add_argument('-C', '--calibration', nargs='+', help="Set calibration constnats <name>=<value>")
     parser.add_argument('-o', '--enable', help="Enable output ('on' or 'off')")
     parser.add_argument(      '--ping', action='store_true', help="Ping device (causes screen to flash)")
     parser.add_argument('-L', '--lock', action='store_true', help="Lock device keys")

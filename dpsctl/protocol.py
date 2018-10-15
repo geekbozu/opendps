@@ -23,6 +23,7 @@ THE SOFTWARE.
 """
 
 from uframe import *
+import struct
 
 # command_t
 cmd_ping = 1
@@ -39,8 +40,9 @@ cmd_set_function = 11
 cmd_enable_output = 12
 cmd_list_functions = 13
 cmd_set_parameters = 14
-cmd_list_parameters = 15
-cmd_temperature_report = 16
+cmd_set_calibration = 15
+cmd_list_parameters = 16
+cmd_temperature_report = 17
 cmd_response = 0x80
 
 # wifi_status_t
@@ -104,6 +106,24 @@ def create_set_parameter(parameter_list):
             f.pack_cstr(parts[1].lstrip().rstrip())
     f.end()
     return f
+
+def create_set_calibration(parameter_list):
+    pass
+    f = uFrame()
+    f.pack8(cmd_set_calibration)
+    for p in parameter_list:
+        parts = p.split("=")
+        if len(parts) != 2:
+            return None
+        else:
+            f.pack_cstr(parts[0].lstrip().rstrip())
+            for t in bytearray(struct.pack("d",float(parts[1].lstrip().rstrip()))):
+                f.pack8(t)
+    f.pack8(0)
+    f.end()
+    return f
+
+
 
 def create_query_response(v_in, v_out_setting, v_out, i_out, i_limit, power_enabled):
     f = uFrame()
