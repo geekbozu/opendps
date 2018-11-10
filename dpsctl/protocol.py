@@ -117,7 +117,7 @@ def create_set_calibration(parameter_list):
             return None
         else:
             f.pack_cstr(parts[0].lstrip().rstrip())
-            for t in bytearray(struct.pack("d",float(parts[1].lstrip().rstrip()))):
+            for t in bytearray(struct.pack("f",float(parts[1].lstrip().rstrip()))):
                 f.pack8(t)
     f.pack8(0)
     f.end()
