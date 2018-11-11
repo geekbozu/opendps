@@ -28,6 +28,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <scb.h>
+#include <dac.h>
 #include "dbg_printf.h"
 #include "hw.h"
 #include "uui.h"
@@ -38,7 +39,7 @@
 #include "bootcom.h"
 #include "uframe.h"
 #include "opendps.h"
-
+#include "dps-model.h"
 #ifdef DPS_EMULATOR
  extern void dps_emul_send_frame(uint8_t *frame, uint32_t length);
 #endif // DPS_EMULATOR
@@ -122,6 +123,50 @@ static command_status_t handle_query(void)
     return cmd_success_but_i_actually_sent_my_own_status_thank_you_very_much;
 }
 
+/**
+  * @brief Handle cal to init flash
+ * @retval command_status_t failed, success or "I sent my own frame"
+  */
+static command_status_t handle_init(void)
+{
+    opendps_format_past();
+	return cmd_success;
+	
+}
+/**
+  * @brief Handle a cal report
+ * @retval command_status_t failed, success or "I sent my own frame"
+  */
+static command_status_t handle_cal_report(void)
+{
+	uint16_t i_out_raw, v_in_raw, v_out_raw;
+    union float_bytes {
+       float val;
+       uint32_t t;
+    } data;
+    
+    hw_get_adc_values(&i_out_raw, &v_in_raw, &v_out_raw);
+	DECLARE_FRAME(64);
+	PACK8(cmd_response | cmd_cal_report);
+    PACK8(1); 
+	PACK16(v_out_raw);
+	PACK16(v_in_raw);
+	PACK16(i_out_raw);
+    PACK16(DAC_DHR12R2);
+    PACK16(DAC_DHR12R1);
+    data.val = V_DAC_K_COEF;
+    PACK32(data.t);
+    data.val = V_DAC_C_COEF;
+    PACK32(data.t);
+    data.val = V_ADC_K_COEF;
+    PACK32(data.t);
+    data.val = V_ADC_C_COEF;
+    PACK32(data.t);
+	FINISH_FRAME();
+	send_frame(_buffer, _length);
+	return cmd_success_but_i_actually_sent_my_own_status_thank_you_very_much;
+	
+}
 static command_status_t handle_set_function(uint8_t *payload, uint32_t payload_len)
 {
     emu_printf("%s\n", __FUNCTION__);
@@ -237,15 +282,15 @@ static command_status_t handle_set_calibration(uint8_t *payload, uint32_t payloa
         UNPACK8(cmd);
         (void) cmd;
         do {
-            /** Extract all occurences of <name>=<value>\0 ... */
+            /** Extract all occurences of <name>=<value> ... */
             name = 0;
             /** This is quite ugly, please don't look */
             name = (char*) &_buffer[_pos];
             _pos += strlen(name) + 1;
             _remain -= strlen(name) + 1;
             value = (float*) &_buffer[_pos];
-            _pos += 5;
-            _remain -= 5;
+            _pos += 4;
+            _remain -= 4;
             if (name && value) {
                 stats[status_index++] = opendps_set_calibration(name, value);
             }
@@ -394,6 +439,9 @@ static void handle_frame(uint8_t *frame, uint32_t length)
     } else {
         cmd = frame[0];
         switch(cmd) {
+            case cmd_init:
+                success = handle_init();
+                break;
             case cmd_ping:
                 success = 1; // Response will be sent below
                 emu_printf("Got pinged\n");
@@ -407,6 +455,9 @@ static void handle_frame(uint8_t *frame, uint32_t length)
                 break;
             case cmd_set_calibration:
                 success = handle_set_calibration(payload, payload_len);
+                break;
+			case cmd_cal_report:
+                success = handle_cal_report();
                 break;
             case cmd_set_parameters:
                 success = handle_set_parameters(payload, payload_len);

@@ -43,6 +43,8 @@ cmd_set_parameters = 14
 cmd_set_calibration = 15
 cmd_list_parameters = 16
 cmd_temperature_report = 17
+cmd_cal_report = 18
+cmd_init = 19
 cmd_response = 0x80
 
 # wifi_status_t
@@ -235,7 +237,28 @@ def unpack_query_response(uframe):
         value = uframe.unpack_cstr()
         data['params'][key] = value
     return data
-
+    
+#returns ADC/Dac values
+def unpack_cal_report(uframe):
+    data = {}
+    data['cal']= {}
+    data['command'] = uframe.unpack8()
+    data['status'] = uframe.unpack8()
+    data['vout_adc'] = uframe.unpack16()
+    data['vin_adc'] = uframe.unpack16()
+    data['iout_adc'] = uframe.unpack16()
+    data['iout_dac'] = uframe.unpack16()
+    data['vout_dac'] = uframe.unpack16()
+    data['cal']['V_DAC_K'] = struct.unpack_from('f',uframe._frame[uframe._unpack_pos+3::-1])
+    uframe.unpack32()
+    data['cal']['V_DAC_C'] = struct.unpack_from('f',uframe._frame[uframe._unpack_pos+3::-1])
+    uframe.unpack32()
+    data['cal']['V_ADC_K'] = struct.unpack_from('f',uframe._frame[uframe._unpack_pos+3::-1])
+    uframe.unpack32()
+    data['cal']['V_ADC_C'] = struct.unpack_from('f',uframe._frame[uframe._unpack_pos+3::-1])
+    uframe.unpack32()
+    return data 
+    
 # Returns wifi_status
 def unpack_wifi_status(uframe):
     return uframe.unpack8()

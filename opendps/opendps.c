@@ -247,7 +247,18 @@ set_param_status_t opendps_set_parameter(char *name, char *value)
     }
     return status;
 }
-
+/**
+ * @brief      Format Past
+ *
+ * @param      name   Name of parameter
+ * @param      value  Value as a string
+ *
+ * @return     Status of the operation
+ */
+bool opendps_format_past()
+{
+    return past_format(&g_past);
+}
 /**
  * @brief      Sets Calibration Data
  *
@@ -269,7 +280,7 @@ set_param_status_t opendps_set_calibration(char *name, float *value)
         param = cal_A_DAC_K;
     } else if(strcmp(name,"A_DAC_C")==0){
         param = cal_A_DAC_C;
-   } else if(strcmp(name,"V_ADC_K")==0){
+    } else if(strcmp(name,"V_ADC_K")==0){
        param = cal_V_ADC_K;
     } else if(strcmp(name,"V_ADC_C")==0){
         param = cal_V_ADC_C;
@@ -282,9 +293,9 @@ set_param_status_t opendps_set_calibration(char *name, float *value)
         return status;
     }
     // Re-init pwrctl with new Calibration Coefs.
-    if (param){
-        past_erase_unit(&g_past, param);
-    }
+    //if (param){
+     //   past_erase_unit(&g_past, param);
+    //}
     if (!past_write_unit(&g_past, param, (void*) &cvalue, 4)) {
         /** @todo: handle past write failures */
     }

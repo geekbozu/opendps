@@ -35,14 +35,14 @@
   */
 
 static uint32_t i_out, v_out, i_limit;
-static float A_ADC_K_COEF = A_ADC_K;
-static float A_ADC_C_COEF = A_ADC_C;
-static float A_DAC_K_COEF = A_DAC_K;
-static float A_DAC_C_COEF = A_DAC_C;
-static float V_ADC_K_COEF = V_ADC_K;
-static float V_ADC_C_COEF = V_ADC_C;
-static float V_DAC_K_COEF = V_DAC_K;
-static float V_DAC_C_COEF = V_DAC_C;
+float A_ADC_K_COEF = A_ADC_K;
+float A_ADC_C_COEF = A_ADC_C;
+float A_DAC_K_COEF = A_DAC_K;
+float A_DAC_C_COEF = A_DAC_C;
+float V_ADC_K_COEF = V_ADC_K;
+float V_ADC_C_COEF = V_ADC_C;
+float V_DAC_K_COEF = V_DAC_K;
+float V_DAC_C_COEF = V_DAC_C;
 static bool v_out_enabled;
 
 /** not static as it is referred to from hw.c for performance reasons */
@@ -218,8 +218,8 @@ bool pwrctl_vout_enabled(void)
   */
 uint32_t pwrctl_calc_vin(uint16_t raw)
 {
-    return V_ADC_K_COEF*raw + V_ADC_C_COEF;      /** @todo: Determine if we need seperate constants here. */
-    //return 16.746*(raw-1) + 64.112; /** @todo: -1 becuse the value needed trimming */
+    //return V_ADC_K_COEF*raw + V_ADC_C_COEF;      /** @todo: Determine if we need seperate constants here. */
+    return 16.746*(raw-1) + 64.112; /** @todo: -1 becuse the value needed trimming */
 }
 
 /**

@@ -89,6 +89,16 @@ bool opendps_get_curr_function_param_value(char *name, char *value, uint32_t val
 set_param_status_t opendps_set_parameter(char *name, char *value);
 
 /**
+ * @brief      Format Past
+ *
+ * @param      name   Name of parameter
+ * @param      value  Value as a string
+ *
+ * @return     Status of the operation
+ */
+bool opendps_format_past(void);
+
+/**
  * @brief      Sets Calibration Data
  *
  * @param      name Name of Const

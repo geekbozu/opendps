@@ -226,6 +226,8 @@ def handle_response(command, frame, args):
 
     if resp_command == cmd_ping:
         print("Got pong from device")
+    elif resp_command == cmd_cal_report:
+        ret_dict = unpack_cal_report(frame)
     elif resp_command == cmd_query:
         data = unpack_query_response(frame)
         enable_str = "on" if data['output_enabled'] else "temperature shutdown" if data['temp_shutdown'] == 1 else "off"
@@ -377,7 +379,9 @@ def handle_commands(args):
         return
 
     comms = create_comms(args)
-
+    if args.init:
+        communicate(comms,create_cmd(cmd_init),args)
+        
     if args.ping:
         communicate(comms, create_cmd(cmd_ping), args)
 
@@ -386,6 +390,7 @@ def handle_commands(args):
 
     if args.lock:
         communicate(comms, create_lock(1), args)
+        
     if args.unlock:
         communicate(comms, create_lock(0), args)
 
@@ -403,8 +408,9 @@ def handle_commands(args):
             communicate(comms, create_enable_output(args.enable), args)
         else:
             fail("enable is 'on' or 'off'")
-    if args.calibration:
-        payload = create_set_calibration(args.calibration)
+            
+    if args.calibration_args:
+        payload = create_set_calibration(args.calibration_args)
         if payload:
             communicate(comms,payload,args)
         else:
@@ -422,6 +428,9 @@ def handle_commands(args):
 
     if hasattr(args, 'temperature') and args.temperature:
         communicate(comms, create_temperature(float(args.temperature)), args)
+        
+    if args.calibrate:
+        do_calibration(comms,args)
 
 """
 Return True if the parameter if_name is an IP address.
@@ -490,6 +499,110 @@ def run_upgrade(comms, fw_file_name, args):
         fail("Device rejected firmware upgrade")
     sys.exit(os.EX_OK)
 
+"""
+Run DPS calibration prompts
+"""
+def do_calibration(comms,args):
+    print "Please ensure nothing is hooked up to the DPS before starting calibration"
+    t = raw_input("Perform Input Voltage Calibration? (Y/n): ")
+    if t.lower() != 'n' or t.lower() == 'y':
+        print communicate(comms, create_cmd(cmd_cal_report), args)
+        #pass #Do input cal here     
+        
+    t = raw_input("Perform Output Voltage Calibration? (Y/n): ")
+    if t.lower() != 'n' or t.lower() == 'y':
+        print "You will need an accurate method of measuring voltage, Such as a multimeter."
+        print "please type results in in mV, EG 1V = 1000 mV"
+        max_v = int(raw_input("DPS input voltage: "))
+        print "Cal Point 1, 10% of Max"
+        args.parameter = ["voltage={}".format(max_v*.1)]
+        payload = create_set_parameter(args.parameter)
+        #start with 10% of Max
+        if payload:
+            communicate(comms, payload, args)
+        communicate(comms, create_enable_output("on"), args)             
+        c1 = float(raw_input("Measured Voltage: "))
+        c1_data = communicate(comms, create_cmd(cmd_cal_report), args)
+        
+        print "Cal Point 2, 90% of Max"
+        args.parameter = ["voltage={}".format(max_v*.9)]
+        payload = create_set_parameter(args.parameter)
+        if payload:
+            communicate(comms, payload, args)
+        c2 = float(raw_input("Measured Voltage: "))
+        c2_data = communicate(comms, create_cmd(cmd_cal_report), args)
+        communicate(comms, create_enable_output("off"), args)             
+        k_dac = (c1_data['vout_dac']-c2_data['vout_dac'])/(c1-c2)
+        c_dac = c1_data['vout_dac']-k_dac*c1
+        k_adc = (c1-c2)/(c1_data['vout_adc']-c2_data['vout_adc'])
+        c_adc = c1-k_adc*c1_data['vout_adc']
+        print "({}-{})/({}-{})".format(c1,c2,c1_data['vout_adc'],c2_data['vout_adc'])
+        print "({}-{}*{})".format(c1,k_adc,c1_data['vout_adc'])
+        
+        args.calibration_args = ['V_DAC_K={}'.format(k_dac),
+                                'V_DAC_C={}'.format(c_dac),
+                                'V_ADC_K={}'.format(k_adc),
+                                'V_ADC_C={}'.format(c_adc)]
+        print args.calibration_args
+        payload = create_set_calibration(args.calibration_args)
+        if payload:
+            communicate(comms,payload,args)
+            
+        print (k_dac,c_dac,k_adc,c_adc)
+        
+        
+        
+        
+    t = raw_input("Perform Output Current Calibration? (Y/n): ")
+    if t.lower() != 'n' or t.lower() == 'y':
+        print "You will need an accurate method of measuring resistors, Such as a multimeter."
+        print "You will need 2 known loads, capable of handling the required power."
+        print "please type results in ohms"
+        max_v = int(raw_input("DPS input voltage in mV: "))
+        max_a = int(raw_input("DPS max Amperage in mA: "))
+        print "Cal Point, {}mV".format(max_v*.5)
+        communicate(comms, create_enable_output("off"), args)
+        
+        c1 = float(raw_input("1st load Measured Resitance: "))
+        args.parameter = ["voltage={}".format(max_v*.5),"current={}".format(max_a)]
+        payload = create_set_parameter(args.parameter)
+        if payload:
+            communicate(comms, payload, args)          
+        
+        raw_input("Please hook up load to DPS, Then press enter")
+        communicate(comms, create_enable_output("on"), args)   
+        os.sleep(.5) #wait for DPS to settle
+        c1_data = communicate(comms, create_cmd(cmd_cal_report), args)
+        communicate(comms, create_enable_output("off"), args)
+        
+        print "Cal Point 2, {}mV".format(max_v*.5)
+        c2 = float(raw_input("2nd load Measured Resitance: "))
+        args.parameter = ["voltage={}".format(max_v*.5),"current={}".format(max_a)]
+        payload = create_set_parameter(args.parameter)
+        if payload:
+            communicate(comms, payload, args)          
+        
+        raw_input("Please hook up load to DPS, Then press enter")
+        communicate(comms, create_enable_output("on"), args)   
+        os.sleep(.5) #wait for DPS to settle
+        c2_data = communicate(comms, create_cmd(cmd_cal_report), args)
+        communicate(comms, create_enable_output("off"), args)
+        
+        k_adc = (c1-c2)/(c1_data['iout_adc']-c2_data['iout_adc'])
+        c_adc = c1-k_adc*c1_data['iout_adc']
+        
+        args.calibration_args = ['I_ADC_K={}'.format(k_dac),
+                                'I_ADC_C={}'.format(c_dac)]
+        payload = create_set_calibration(args.calibration_args)
+        if payload:
+            communicate(comms,payload,args)
+            
+        print (k_adc,c_adc,k_dac,c_dac)
+        
+    t = raw_input("Perform Constant Current Calibration? (Y/n): ")
+    if t.lower() != 'n' or t.lower() == 'y':
+        pass
+        
 """
 Create and return a comminications interface object or None if no comms if
 was specified.
@@ -600,7 +713,8 @@ def main():
     parser.add_argument('-F', '--list-functions', action='store_true', help="List available functions")
     parser.add_argument('-p', '--parameter', nargs='+', help="Set function parameter <name>=<value>")
     parser.add_argument('-P', '--list-parameters', action='store_true', help="List function parameters of active function")
-    parser.add_argument('-C', '--calibration', nargs='+', help="Set calibration constnats <name>=<value>")
+    parser.add_argument('-c', '--calibrate', action="store_true", help="Starts System Calibration")
+    parser.add_argument('-C', '--calibration_args', nargs='+', help="Set calibration constants <name>=<value>")
     parser.add_argument('-o', '--enable', help="Enable output ('on' or 'off')")
     parser.add_argument(      '--ping', action='store_true', help="Ping device (causes screen to flash)")
     parser.add_argument('-L', '--lock', action='store_true', help="Lock device keys")
@@ -609,6 +723,7 @@ def main():
     parser.add_argument('-j', '--json', action='store_true', help="Output parameters as JSON")
     parser.add_argument('-v', '--verbose', action='store_true', help="Verbose communications")
     parser.add_argument('-U', '--upgrade', type=str, dest="firmware", help="Perform upgrade of OpenDPS firmware")
+    parser.add_argument('--init', action='store_true', help="Re-inits internal storage")
     parser.add_argument(      '--force', action='store_true', help="Force upgrade even if dpsctl complains about the firmware")
     if testing:
         parser.add_argument('-t', '--temperature', type=str, dest="temperature", help="Send temperature report (for testing)")
