@@ -36,6 +36,8 @@ typedef enum {
     cal_V_DAC_C,
     cal_V_ADC_K,
     cal_V_ADC_C,
+    cal_VIN_ADC_K,
+    cal_VIN_ADC_C,
     /** stored as 0 or 1 */
     past_tft_inversion,
     /** stored as strings */

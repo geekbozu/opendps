@@ -142,8 +142,8 @@ static command_status_t handle_cal_report(void)
 	uint16_t i_out_raw, v_in_raw, v_out_raw;
     union float_bytes {
        float val;
-       uint32_t t;
-    } data;
+       uint32_t out;
+    } transfer;
     
     hw_get_adc_values(&i_out_raw, &v_in_raw, &v_out_raw);
 	DECLARE_FRAME(64);
@@ -154,14 +154,26 @@ static command_status_t handle_cal_report(void)
 	PACK16(i_out_raw);
     PACK16(DAC_DHR12R2);
     PACK16(DAC_DHR12R1);
-    data.val = V_DAC_K_COEF;
-    PACK32(data.t);
-    data.val = V_DAC_C_COEF;
-    PACK32(data.t);
-    data.val = V_ADC_K_COEF;
-    PACK32(data.t);
-    data.val = V_ADC_C_COEF;
-    PACK32(data.t);
+    transfer.val = A_ADC_K_COEF;
+    PACK32(transfer.out);
+    transfer.val = A_ADC_C_COEF;
+    PACK32(transfer.out);
+    transfer.val = A_DAC_K_COEF;
+    PACK32(transfer.out);
+    transfer.val = A_DAC_C_COEF;
+    PACK32(transfer.out);
+    transfer.val = V_ADC_K_COEF;
+    PACK32(transfer.out);
+    transfer.val = V_ADC_C_COEF;
+    PACK32(transfer.out);
+    transfer.val = V_DAC_K_COEF;
+    PACK32(transfer.out);
+    transfer.val = V_DAC_C_COEF;
+    PACK32(transfer.out);
+    transfer.val = VIN_ADC_K_COEF;
+    PACK32(transfer.out);
+    transfer.val = VIN_ADC_C_COEF;
+    PACK32(transfer.out);
 	FINISH_FRAME();
 	send_frame(_buffer, _length);
 	return cmd_success_but_i_actually_sent_my_own_status_thank_you_very_much;

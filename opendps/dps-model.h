@@ -76,4 +76,8 @@
  #error "Please set MODEL to the device you want to build for"
 #endif // MODEL
 
+//These are constant across all models currently. Adjust with sane defaults if needed later. 
+ #define VIN_ADC_K (double)16.746
+ #define VIN_ADC_C (double)64.112
+
 #endif // __DPS_MODEL_H__

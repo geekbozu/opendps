@@ -35,6 +35,8 @@ extern float V_ADC_K_COEF;
 extern float V_ADC_C_COEF;
 extern float V_DAC_K_COEF;
 extern float V_DAC_C_COEF;
+extern float VIN_ADC_K_COEF;
+extern float VIN_ADC_C_COEF;
 extern uint32_t pwrctl_i_limit_raw;
 
 /**

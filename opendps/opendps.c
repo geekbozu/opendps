@@ -292,6 +292,10 @@ set_param_status_t opendps_set_calibration(char *name, float *value)
         param = cal_V_DAC_K;
     } else if(strcmp(name,"V_DAC_C")==0){
         param = cal_V_DAC_C;
+    } else if(strcmp(name,"VIN_ADC_K")==0){
+        param = cal_VIN_ADC_K;
+    } else if(strcmp(name,"VIN_ADC_C")==0){
+        param = cal_VIN_ADC_C;
     } else {
         status = ps_not_supported;
         return status;

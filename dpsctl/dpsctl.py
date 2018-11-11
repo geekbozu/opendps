@@ -415,7 +415,40 @@ def handle_commands(args):
             communicate(comms,payload,args)
         else:
             fail("malformatted parameters")
-
+    if args.calibration_report:
+        data = communicate(comms, create_cmd(cmd_cal_report), args)
+        print "Calibration Report:\r\n \
+        {} = {}\r\n \
+        {} = {}\r\n \
+        {} = {}\r\n \
+        {} = {}\r\n \
+        {} = {}\r\n \
+        {} = {}\r\n \
+        {} = {}\r\n \
+        {} = {}\r\n \
+        {} = {}\r\n \
+        {} = {}\r\n \
+        {} = {}\r\n \
+        {} = {}\r\n \
+        {} = {}\r\n \
+        {} = {}\r\n \
+        {} = {}".format(
+        "A_ADC_K",data['cal']['A_ADC_K'][0],
+        "A_ADC_C",data['cal']['A_ADC_C'][0],
+        "A_DAC_K",data['cal']['A_DAC_K'][0],
+        "A_DAC_C",data['cal']['A_DAC_C'][0],
+        "V_ADC_K",data['cal']['V_DAC_K'][0],
+        "V_ADC_C",data['cal']['V_DAC_C'][0],
+        "V_DAC_K",data['cal']['V_DAC_K'][0],
+        "V_DAC_C",data['cal']['V_DAC_C'][0],
+        "VIN_ADC_K",data['cal']['VIN_ADC_K'][0],
+        "VIN_ADC_C",data['cal']['VIN_ADC_C'][0],
+        "VIN_ADC",data['vin_adc'],
+        "VOUT_ADC",data['vout_adc'],
+        "IOUT_ADC",data['iout_adc'],
+        "IOUT_DAC",data['iout_dac'],
+        "VOUT_DAC",data['vout_dac'])
+        
     if args.parameter:
         payload = create_set_parameter(args.parameter)
         if payload:
@@ -503,17 +536,67 @@ def run_upgrade(comms, fw_file_name, args):
 Run DPS calibration prompts
 """
 def do_calibration(comms,args):
-    print "Please ensure nothing is hooked up to the DPS before starting calibration"
+    data = communicate(comms, create_cmd(cmd_cal_report), args)
+    print "Previous Calibration Constants:\r\n \
+    {} = {}\r\n \
+    {} = {}\r\n \
+    {} = {}\r\n \
+    {} = {}\r\n \
+    {} = {}\r\n \
+    {} = {}\r\n \
+    {} = {}\r\n \
+    {} = {}\r\n \
+    {} = {}\r\n \
+    {} = {}\r\n".format(
+    "A_ADC_K",data['cal']['A_ADC_K'][0],
+    "A_ADC_C",data['cal']['A_ADC_C'][0],
+    "A_DAC_K",data['cal']['A_DAC_K'][0],
+    "A_DAC_C",data['cal']['A_DAC_C'][0],
+    "V_ADC_K",data['cal']['V_DAC_K'][0],
+    "V_ADC_C",data['cal']['V_DAC_C'][0],
+    "V_DAC_K",data['cal']['V_DAC_K'][0],
+    "V_DAC_C",data['cal']['V_DAC_C'][0],
+    "VIN_ADC_K",data['cal']['VIN_ADC_K'][0],
+    "VIN_ADC_C",data['cal']['VIN_ADC_C'][0])
+    
+    print "Please ensure nothing is hooked up to the DPS before starting calibration\r\n"
+    
     t = raw_input("Perform Input Voltage Calibration? (Y/n): ")
     if t.lower() != 'n' or t.lower() == 'y':
-        print communicate(comms, create_cmd(cmd_cal_report), args)
-        #pass #Do input cal here     
+        print "You will need an accurate method of measuring voltage, Such as a multimeter."
+        print "You will need an accurate method of generating 2 stable input voltages."
+        print "please type results in in mV, EG 1V = 1000 mV"
+        print "###########################################################"
+        #Do First voltage hookup, We need the adc values, hopefully
+        #peoples computers assign consistent serial ports/IP's
+        print "Please hook up the first lower supply voltage to the DPS now \r\n \
+        ensuring that the serial connection is connected after boot"
+        v1 = float(raw_input("Type input voltage in mV: "))
+        data1 = communicate(comms, create_cmd(cmd_cal_report), args)
+        #Do second Voltage Hookup
+        print "Please hook up the Second higher supply voltage to the DPS now \r\n \
+        ensuring that the serial connection is connected after boot"
+        v2 = float(raw_input("Type input voltage in mV: "))
+        data2 = communicate(comms, create_cmd(cmd_cal_report), args)
+        
+        #Math out the calibration constants
+        k_adc = (v1-v2)/(data1['vin_adc']-data2['vin_adc'])
+        c_adc = v1-k_adc*data1['vin_adc']
+        
+        args.calibration_args = ['VIN_ADC_K={}'.format(k_adc),
+                                'VIN_ADC_C={}'.format(c_adc)]
+
+        payload = create_set_calibration(args.calibration_args)
+        if payload:
+            communicate(comms,payload,args)
+        print "Input Voltage Calibration Complete"    
+        
         
     t = raw_input("Perform Output Voltage Calibration? (Y/n): ")
     if t.lower() != 'n' or t.lower() == 'y':
         print "You will need an accurate method of measuring voltage, Such as a multimeter."
         print "please type results in in mV, EG 1V = 1000 mV"
-        max_v = int(raw_input("DPS input voltage: "))
+        max_v = float(raw_input("DPS input voltage: "))
         print "Cal Point 1, 10% of Max"
         args.parameter = ["voltage={}".format(max_v*.1),"current=1000"]
         payload = create_set_parameter(args.parameter)
@@ -536,8 +619,6 @@ def do_calibration(comms,args):
         c_dac = c1_data['vout_dac']-k_dac*c1
         k_adc = (c1-c2)/(c1_data['vout_adc']-c2_data['vout_adc'])
         c_adc = c1-k_adc*c1_data['vout_adc']
-        print "({}-{})/({}-{})".format(c1,c2,c1_data['vout_adc'],c2_data['vout_adc'])
-        print "({}-{}*{})".format(c1,k_adc,c1_data['vout_adc'])
         
         args.calibration_args = ['V_DAC_K={}'.format(k_dac),
                                 'V_DAC_C={}'.format(c_dac),
@@ -547,8 +628,7 @@ def do_calibration(comms,args):
         payload = create_set_calibration(args.calibration_args)
         if payload:
             communicate(comms,payload,args)
-            
-        print (k_dac,c_dac,k_adc,c_adc)
+        print "Output Voltage Calibration Complete"
         
         
         
@@ -558,8 +638,8 @@ def do_calibration(comms,args):
         print "You will need an accurate method of measuring resistors, Such as a multimeter."
         print "You will need 2 known loads, capable of handling the required power."
         print "please type results in ohms"
-        max_v = int(raw_input("DPS input voltage in mV: "))
-        max_a = int(raw_input("DPS max Amperage in mA: "))
+        max_v = float(raw_input("DPS input voltage in mV: "))
+        max_a = float(raw_input("DPS max Amperage in mA: "))
         print "Cal Point, {}mV".format(max_v*.5)
         communicate(comms, create_enable_output("off"), args)
         
@@ -714,6 +794,7 @@ def main():
     parser.add_argument('-p', '--parameter', nargs='+', help="Set function parameter <name>=<value>")
     parser.add_argument('-P', '--list-parameters', action='store_true', help="List function parameters of active function")
     parser.add_argument('-c', '--calibrate', action="store_true", help="Starts System Calibration")
+    parser.add_argument('-cr', '--calibration_report', action="store_true", help="Prints Calibration report")
     parser.add_argument('-C', '--calibration_args', nargs='+', help="Set calibration constants <name>=<value>")
     parser.add_argument('-o', '--enable', help="Enable output ('on' or 'off')")
     parser.add_argument(      '--ping', action='store_true', help="Ping device (causes screen to flash)")

@@ -43,6 +43,8 @@ float V_ADC_K_COEF = V_ADC_K;
 float V_ADC_C_COEF = V_ADC_C;
 float V_DAC_K_COEF = V_DAC_K;
 float V_DAC_C_COEF = V_DAC_C;
+float VIN_ADC_K_COEF = VIN_ADC_K;
+float VIN_ADC_C_COEF = VIN_ADC_C;
 static bool v_out_enabled;
 
 /** not static as it is referred to from hw.c for performance reasons */
@@ -113,6 +115,20 @@ void pwrctl_init(past_t *past)
         V_DAC_C_COEF = *p;
     } else {
         V_DAC_C_COEF = V_DAC_C;
+    }
+    
+    if (past_read_unit(past, cal_VIN_ADC_K,(const void**) &p, &length))
+    {
+        VIN_ADC_K_COEF = *p;
+    } else {
+        VIN_ADC_K_COEF = VIN_ADC_K;
+    }
+    
+    if (past_read_unit(past, cal_VIN_ADC_C,(const void**) &p, &length))
+    {
+        VIN_ADC_C_COEF = *p;
+    } else {
+        VIN_ADC_C_COEF = VIN_ADC_C;
     }
 
     pwrctl_enable_vout(false);
@@ -240,8 +256,7 @@ bool pwrctl_vout_enabled(void)
   */
 uint32_t pwrctl_calc_vin(uint16_t raw)
 {
-    //return V_ADC_K_COEF*raw + V_ADC_C_COEF;      /** @todo: Determine if we need seperate constants here. */
-    return 16.746*(raw-1) + 64.112; /** @todo: -1 becuse the value needed trimming */
+    return VIN_ADC_K_COEF*raw + VIN_ADC_C_COEF; /** @todo: Determine if we still need to trim. */
 }
 
 /**
