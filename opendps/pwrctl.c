@@ -62,35 +62,57 @@ void pwrctl_init(past_t *past)
     if (past_read_unit(past, cal_A_ADC_K, (const void**) &p, &length))
     {
         A_ADC_K_COEF = *p;
+    } else {
+        A_ADC_K_COEF = A_ADC_K;
     }
 
     if (past_read_unit(past, cal_A_ADC_C,(const void**) &p, &length))
     {
         A_ADC_C_COEF = *p;
+    } else {
+        A_ADC_C_COEF = A_ADC_C;
     }
+    
     if (past_read_unit(past, cal_A_DAC_K, (const void**) &p, &length))
     {
         A_DAC_K_COEF = *p;
+    } else {
+        A_DAC_K_COEF = A_DAC_K;
     }
+    
     if (past_read_unit(past, cal_A_DAC_C,(const void**) &p, &length))
     {
         A_DAC_C_COEF = *p;
+    } else {
+        A_DAC_C_COEF = A_DAC_C;
     }
+    
     if (past_read_unit(past, cal_V_ADC_K, (const void**) &p, &length))
     {
         V_ADC_K_COEF = *p;
+    } else {
+        V_ADC_K_COEF = V_ADC_K;
     }
+    
     if (past_read_unit(past, cal_V_ADC_C,(const void**) &p, &length))
     {
         V_ADC_C_COEF = *p;
+    } else {
+        V_ADC_C_COEF = V_ADC_C;
     }
+    
     if (past_read_unit(past, cal_V_DAC_K, (const void**) &p, &length))
     {
         V_DAC_K_COEF = *p;
+    } else {
+        V_DAC_K_COEF = V_DAC_K;
     }
+    
     if (past_read_unit(past, cal_V_DAC_C,(const void**) &p, &length))
     {
         V_DAC_C_COEF = *p;
+    } else {
+        V_DAC_C_COEF = V_DAC_C;
     }
 
     pwrctl_enable_vout(false);

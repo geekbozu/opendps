@@ -515,7 +515,7 @@ def do_calibration(comms,args):
         print "please type results in in mV, EG 1V = 1000 mV"
         max_v = int(raw_input("DPS input voltage: "))
         print "Cal Point 1, 10% of Max"
-        args.parameter = ["voltage={}".format(max_v*.1)]
+        args.parameter = ["voltage={}".format(max_v*.1),"current=1000"]
         payload = create_set_parameter(args.parameter)
         #start with 10% of Max
         if payload:

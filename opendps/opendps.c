@@ -257,7 +257,11 @@ set_param_status_t opendps_set_parameter(char *name, char *value)
  */
 bool opendps_format_past()
 {
-    return past_format(&g_past);
+    
+    past_format(&g_past);
+    pwrctl_init(&g_past);
+    uui_refresh(&func_ui, false);
+    return true;
 }
 /**
  * @brief      Sets Calibration Data
