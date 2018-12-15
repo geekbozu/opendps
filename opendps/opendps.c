@@ -273,10 +273,9 @@ bool opendps_format_past()
  */
 set_param_status_t opendps_set_calibration(char *name, float *value)
 {
-    set_param_status_t status = ps_ok;
-    past_id_t param=0;
-    float cvalue = *value;
-    if(strcmp(name,"A_ADC_K")==0){
+    past_id_t param;
+
+    if (strcmp(name,"A_ADC_K")==0){
         param = cal_A_ADC_K;
     } else if(strcmp(name,"A_ADC_C")==0){
         param = cal_A_ADC_C;
@@ -285,7 +284,7 @@ set_param_status_t opendps_set_calibration(char *name, float *value)
     } else if(strcmp(name,"A_DAC_C")==0){
         param = cal_A_DAC_C;
     } else if(strcmp(name,"V_ADC_K")==0){
-       param = cal_V_ADC_K;
+        param = cal_V_ADC_K;
     } else if(strcmp(name,"V_ADC_C")==0){
         param = cal_V_ADC_C;
     } else if(strcmp(name,"V_DAC_K")==0){
@@ -297,19 +296,18 @@ set_param_status_t opendps_set_calibration(char *name, float *value)
     } else if(strcmp(name,"VIN_ADC_C")==0){
         param = cal_VIN_ADC_C;
     } else {
-        status = ps_not_supported;
-        return status;
+        return ps_not_supported;
     }
     // Re-init pwrctl with new Calibration Coefs.
     //if (param){
      //   past_erase_unit(&g_past, param);
     //}
-    if (!past_write_unit(&g_past, param, (void*) &cvalue, sizeof(float))) {
+    if (!past_write_unit(&g_past, param, (void*) value, sizeof(*value))) {
         /** @todo: handle past write failures */
     }
 
     pwrctl_init(&g_past);
-    return status;
+    return ps_ok;
 }
 
 /**
