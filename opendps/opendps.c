@@ -304,7 +304,7 @@ set_param_status_t opendps_set_calibration(char *name, float *value)
     //if (param){
      //   past_erase_unit(&g_past, param);
     //}
-    if (!past_write_unit(&g_past, param, (void*) &cvalue, 4)) {
+    if (!past_write_unit(&g_past, param, (void*) &cvalue, sizeof(float))) {
         /** @todo: handle past write failures */
     }
 
