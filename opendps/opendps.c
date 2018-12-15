@@ -247,27 +247,27 @@ set_param_status_t opendps_set_parameter(char *name, char *value)
     }
     return status;
 }
+
 /**
  * @brief      Format Past
  *
- * @param      name   Name of parameter
- * @param      value  Value as a string
- *
- * @return     Status of the operation
+ * @return     True on success, else false
  */
 bool opendps_format_past()
 {
-    
+    if (!past_format(&g_past))
+        return false;
     past_format(&g_past);
     pwrctl_init(&g_past);
     uui_refresh(&func_ui, false);
     return true;
 }
+
 /**
  * @brief      Sets Calibration Data
  *
- * @param      name Name of Const
- * @value      value Value as String
+ * @param      name Name of calibration variable to set
+ * @value      value Value to set it to
  *
  * @return     Status of the operation
  */
