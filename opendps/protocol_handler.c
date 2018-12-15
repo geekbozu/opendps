@@ -131,54 +131,40 @@ static command_status_t handle_init(void)
 {
     opendps_format_past();
 	return cmd_success;
-	
 }
+
 /**
   * @brief Handle a cal report
  * @retval command_status_t failed, success or "I sent my own frame"
   */
 static command_status_t handle_cal_report(void)
 {
-	uint16_t i_out_raw, v_in_raw, v_out_raw;
-    union float_bytes {
-       float val;
-       uint32_t out;
-    } transfer;
-    
+    uint16_t i_out_raw, v_in_raw, v_out_raw;
     hw_get_adc_values(&i_out_raw, &v_in_raw, &v_out_raw);
-	DECLARE_FRAME(64);
-	PACK8(cmd_response | cmd_cal_report);
+
+    DECLARE_FRAME(64);
+    PACK8(cmd_response | cmd_cal_report);
     PACK8(1); 
-	PACK16(v_out_raw);
-	PACK16(v_in_raw);
-	PACK16(i_out_raw);
+    PACK16(v_out_raw);
+    PACK16(v_in_raw);
+    PACK16(i_out_raw);
     PACK16(DAC_DHR12R2);
     PACK16(DAC_DHR12R1);
-    transfer.val = A_ADC_K_COEF;
-    PACK32(transfer.out);
-    transfer.val = A_ADC_C_COEF;
-    PACK32(transfer.out);
-    transfer.val = A_DAC_K_COEF;
-    PACK32(transfer.out);
-    transfer.val = A_DAC_C_COEF;
-    PACK32(transfer.out);
-    transfer.val = V_ADC_K_COEF;
-    PACK32(transfer.out);
-    transfer.val = V_ADC_C_COEF;
-    PACK32(transfer.out);
-    transfer.val = V_DAC_K_COEF;
-    PACK32(transfer.out);
-    transfer.val = V_DAC_C_COEF;
-    PACK32(transfer.out);
-    transfer.val = VIN_ADC_K_COEF;
-    PACK32(transfer.out);
-    transfer.val = VIN_ADC_C_COEF;
-    PACK32(transfer.out);
-	FINISH_FRAME();
-	send_frame(_buffer, _length);
-	return cmd_success_but_i_actually_sent_my_own_status_thank_you_very_much;
-	
+    PACK32((uint32_t) A_ADC_K_COEF);
+    PACK32((uint32_t) A_ADC_C_COEF);
+    PACK32((uint32_t) A_DAC_K_COEF);
+    PACK32((uint32_t) A_DAC_C_COEF);
+    PACK32((uint32_t) V_ADC_K_COEF);
+    PACK32((uint32_t) V_ADC_C_COEF);
+    PACK32((uint32_t) V_DAC_K_COEF);
+    PACK32((uint32_t) V_DAC_C_COEF);
+    PACK32((uint32_t) VIN_ADC_K_COEF);
+    PACK32((uint32_t) VIN_ADC_C_COEF);
+    FINISH_FRAME();
+    send_frame(_buffer, _length);
+    return cmd_success_but_i_actually_sent_my_own_status_thank_you_very_much;
 }
+
 static command_status_t handle_set_function(uint8_t *payload, uint32_t payload_len)
 {
     emu_printf("%s\n", __FUNCTION__);
@@ -468,7 +454,7 @@ static void handle_frame(uint8_t *frame, uint32_t length)
             case cmd_set_calibration:
                 success = handle_set_calibration(payload, payload_len);
                 break;
-			case cmd_cal_report:
+            case cmd_cal_report:
                 success = handle_cal_report();
                 break;
             case cmd_set_parameters:
