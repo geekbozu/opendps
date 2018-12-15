@@ -74,7 +74,7 @@ static void send_frame(uint8_t *frame, uint32_t length)
 
 /**
   * @brief Handle a query command
- * @retval command_status_t failed, success or "I sent my own frame"
+  * @retval command_status_t failed, success or "I sent my own frame"
   */
 static command_status_t handle_query(void)
 {
@@ -125,17 +125,17 @@ static command_status_t handle_query(void)
 
 /**
   * @brief Handle cal to init flash
- * @retval command_status_t failed, success or "I sent my own frame"
+  * @retval command_status_t failed, success or "I sent my own frame"
   */
 static command_status_t handle_init(void)
 {
     opendps_format_past();
-	return cmd_success;
+    return cmd_success;
 }
 
 /**
   * @brief Handle a cal report
- * @retval command_status_t failed, success or "I sent my own frame"
+  * @retval command_status_t failed, success or "I sent my own frame"
   */
 static command_status_t handle_cal_report(void)
 {
