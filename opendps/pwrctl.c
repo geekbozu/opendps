@@ -56,83 +56,44 @@ uint32_t pwrctl_i_limit_raw;
   */
 void pwrctl_init(past_t *past)
 {
-    //pwrctl_enable_vout(false);
-   // return;
-    //Load constants from PAST here
-    float *p = 0;
     uint32_t length;
-    if (past_read_unit(past, cal_A_ADC_K, (const void**) &p, &length))
-    {
-        a_adc_k_coef = *p;
-    } else {
-        a_adc_k_coef = A_ADC_K;
-    }
+    float *p;
 
+    /** Load default calibration constants */
+    a_adc_k_coef = A_ADC_K;
+    a_adc_c_coef = A_ADC_C;
+    a_dac_k_coef = A_DAC_K;
+    a_dac_c_coef = A_DAC_C;
+    v_adc_k_coef = V_ADC_K;
+    v_adc_c_coef = V_ADC_C;
+    v_dac_k_coef = V_DAC_K;
+    v_dac_c_coef = V_DAC_C;
+    vin_adc_k_coef = VIN_ADC_K;
+    vin_adc_c_coef = VIN_ADC_C;
+
+    /** Load any calibration constants that maybe stored in non-volatile memory (past) */
+    if (past_read_unit(past, cal_A_ADC_K, (const void**) &p, &length))
+        a_adc_k_coef = *p;
     if (past_read_unit(past, cal_A_ADC_C,(const void**) &p, &length))
-    {
         a_adc_c_coef = *p;
-    } else {
-        a_adc_c_coef = A_ADC_C;
-    }
-    
     if (past_read_unit(past, cal_A_DAC_K, (const void**) &p, &length))
-    {
         a_dac_k_coef = *p;
-    } else {
-        a_dac_k_coef = A_DAC_K;
-    }
-    
     if (past_read_unit(past, cal_A_DAC_C,(const void**) &p, &length))
-    {
         a_dac_c_coef = *p;
-    } else {
-        a_dac_c_coef = A_DAC_C;
-    }
-    
     if (past_read_unit(past, cal_V_ADC_K, (const void**) &p, &length))
-    {
         v_adc_k_coef = *p;
-    } else {
-        v_adc_k_coef = V_ADC_K;
-    }
-    
     if (past_read_unit(past, cal_V_ADC_C,(const void**) &p, &length))
-    {
         v_adc_c_coef = *p;
-    } else {
-        v_adc_c_coef = V_ADC_C;
-    }
-    
     if (past_read_unit(past, cal_V_DAC_K, (const void**) &p, &length))
-    {
         v_dac_k_coef = *p;
-    } else {
-        v_dac_k_coef = V_DAC_K;
-    }
-    
     if (past_read_unit(past, cal_V_DAC_C,(const void**) &p, &length))
-    {
         v_dac_c_coef = *p;
-    } else {
-        v_dac_c_coef = V_DAC_C;
-    }
-    
     if (past_read_unit(past, cal_VIN_ADC_K,(const void**) &p, &length))
-    {
         vin_adc_k_coef = *p;
-    } else {
-        vin_adc_k_coef = VIN_ADC_K;
-    }
-    
     if (past_read_unit(past, cal_VIN_ADC_C,(const void**) &p, &length))
-    {
         vin_adc_c_coef = *p;
-    } else {
-        vin_adc_c_coef = VIN_ADC_C;
-    }
 
     pwrctl_enable_vout(false);
-
 }
 
 /**
