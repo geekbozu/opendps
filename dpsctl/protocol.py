@@ -110,7 +110,6 @@ def create_set_parameter(parameter_list):
     return f
 
 def create_set_calibration(parameter_list):
-    pass
     f = uFrame()
     f.pack8(cmd_set_calibration)
     for p in parameter_list:
@@ -124,8 +123,6 @@ def create_set_calibration(parameter_list):
     f.pack8(0)
     f.end()
     return f
-
-
 
 def create_query_response(v_in, v_out_setting, v_out, i_out, i_limit, power_enabled):
     f = uFrame()
@@ -238,7 +235,7 @@ def unpack_query_response(uframe):
         data['params'][key] = value
     return data
     
-#returns ADC/Dac values
+# Returns ADC/DAC values and calibration values
 def unpack_cal_report(uframe):
     data = {}
     data['cal']= {}
@@ -249,26 +246,16 @@ def unpack_cal_report(uframe):
     data['iout_adc'] = uframe.unpack16()
     data['iout_dac'] = uframe.unpack16()
     data['vout_dac'] = uframe.unpack16()
-    data['cal']['A_ADC_K'] = struct.unpack_from('f',uframe._frame[uframe._unpack_pos+3::-1])
-    uframe.unpack32()
-    data['cal']['A_ADC_C'] = struct.unpack_from('f',uframe._frame[uframe._unpack_pos+3::-1])
-    uframe.unpack32()
-    data['cal']['A_DAC_K'] = struct.unpack_from('f',uframe._frame[uframe._unpack_pos+3::-1])
-    uframe.unpack32()
-    data['cal']['A_DAC_C'] = struct.unpack_from('f',uframe._frame[uframe._unpack_pos+3::-1])
-    uframe.unpack32()
-    data['cal']['V_ADC_K'] = struct.unpack_from('f',uframe._frame[uframe._unpack_pos+3::-1])
-    uframe.unpack32()
-    data['cal']['V_ADC_C'] = struct.unpack_from('f',uframe._frame[uframe._unpack_pos+3::-1])
-    uframe.unpack32()
-    data['cal']['V_DAC_K'] = struct.unpack_from('f',uframe._frame[uframe._unpack_pos+3::-1])
-    uframe.unpack32()
-    data['cal']['V_DAC_C'] = struct.unpack_from('f',uframe._frame[uframe._unpack_pos+3::-1])
-    uframe.unpack32()
-    data['cal']['VIN_ADC_K'] = struct.unpack_from('f',uframe._frame[uframe._unpack_pos+3::-1])
-    uframe.unpack32()
-    data['cal']['VIN_ADC_C'] = struct.unpack_from('f',uframe._frame[uframe._unpack_pos+3::-1])
-    uframe.unpack32()
+    data['cal']['A_ADC_K'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))
+    data['cal']['A_ADC_C'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))
+    data['cal']['A_DAC_K'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))
+    data['cal']['A_DAC_C'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))
+    data['cal']['V_ADC_K'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))
+    data['cal']['V_ADC_C'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))
+    data['cal']['V_DAC_K'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))
+    data['cal']['V_DAC_C'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))
+    data['cal']['VIN_ADC_K'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))
+    data['cal']['VIN_ADC_C'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))
     return data 
     
 # Returns wifi_status
