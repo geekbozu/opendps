@@ -298,14 +298,12 @@ set_param_status_t opendps_set_calibration(char *name, float *value)
     } else {
         return ps_not_supported;
     }
-    // Re-init pwrctl with new Calibration Coefs.
-    //if (param){
-     //   past_erase_unit(&g_past, param);
-    //}
+    
     if (!past_write_unit(&g_past, param, (void*) value, sizeof(*value))) {
         /** @todo: handle past write failures */
     }
 
+    /** Re-init pwrctl with new Calibration Coefs */
     pwrctl_init(&g_past);
     return ps_ok;
 }
