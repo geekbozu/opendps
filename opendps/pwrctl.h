@@ -22,11 +22,13 @@
  * THE SOFTWARE.
  */
 
+#ifndef __PWRCTL_H__
+#define __PWRCTL_H__
+
 #include <stdint.h>
 #include <stdbool.h>
 #include "past.h"
-#ifndef __PWRCTL_H__
-#define __PWRCTL_H__
+
 extern float A_ADC_K_COEF;
 extern float A_ADC_C_COEF;
 extern float A_DAC_K_COEF;
