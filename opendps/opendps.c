@@ -257,7 +257,6 @@ bool opendps_format_past()
 {
     if (!past_format(&g_past))
         return false;
-    past_format(&g_past);
     pwrctl_init(&g_past);
     uui_refresh(&func_ui, false);
     return true;
