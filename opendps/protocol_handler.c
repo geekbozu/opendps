@@ -129,8 +129,10 @@ static command_status_t handle_query(void)
   */
 static command_status_t handle_init(void)
 {
-    opendps_format_past();
-    return cmd_success;
+    if (opendps_format_past())
+        return cmd_success;
+    else
+        return cmd_failed;
 }
 
 /**
