@@ -417,37 +417,22 @@ def handle_commands(args):
             fail("malformatted parameters")
     if args.calibration_report:
         data = communicate(comms, create_cmd(cmd_cal_report), args)
-        print("Calibration Report:\r\n \
-        {} = {}\r\n \
-        {} = {}\r\n \
-        {} = {}\r\n \
-        {} = {}\r\n \
-        {} = {}\r\n \
-        {} = {}\r\n \
-        {} = {}\r\n \
-        {} = {}\r\n \
-        {} = {}\r\n \
-        {} = {}\r\n \
-        {} = {}\r\n \
-        {} = {}\r\n \
-        {} = {}\r\n \
-        {} = {}\r\n \
-        {} = {}".format(
-        "A_ADC_K",data['cal']['A_ADC_K'][0],
-        "A_ADC_C",data['cal']['A_ADC_C'][0],
-        "A_DAC_K",data['cal']['A_DAC_K'][0],
-        "A_DAC_C",data['cal']['A_DAC_C'][0],
-        "V_ADC_K",data['cal']['V_DAC_K'][0],
-        "V_ADC_C",data['cal']['V_DAC_C'][0],
-        "V_DAC_K",data['cal']['V_DAC_K'][0],
-        "V_DAC_C",data['cal']['V_DAC_C'][0],
-        "VIN_ADC_K",data['cal']['VIN_ADC_K'][0],
-        "VIN_ADC_C",data['cal']['VIN_ADC_C'][0],
-        "VIN_ADC",data['vin_adc'],
-        "VOUT_ADC",data['vout_adc'],
-        "IOUT_ADC",data['iout_adc'],
-        "IOUT_DAC",data['iout_dac'],
-        "VOUT_DAC",data['vout_dac']))
+        print("Calibration Report:")
+        print("\tA_ADC_K = {}".format(data['cal']['A_ADC_K'][0]))
+        print("\tA_ADC_C = {}".format(data['cal']['A_ADC_C'][0]))
+        print("\tA_DAC_K = {}".format(data['cal']['A_DAC_K'][0]))
+        print("\tA_DAC_C = {}".format(data['cal']['A_DAC_C'][0]))
+        print("\tV_ADC_K = {}".format(data['cal']['V_DAC_K'][0]))
+        print("\tV_ADC_C = {}".format(data['cal']['V_DAC_C'][0]))
+        print("\tV_DAC_K = {}".format(data['cal']['V_DAC_K'][0]))
+        print("\tV_DAC_C = {}".format(data['cal']['V_DAC_C'][0]))
+        print("\tVIN_ADC_K = {}".format(data['cal']['VIN_ADC_K'][0]))
+        print("\tVIN_ADC_C = {}".format(data['cal']['VIN_ADC_C'][0]))
+        print("\tVIN_ADC = {}".format(data['vin_adc']))
+        print("\tVOUT_ADC = {}".format(data['vout_adc']))
+        print("\tIOUT_ADC = {}".format(data['iout_adc']))
+        print("\tIOUT_DAC = {}".format(data['iout_dac']))
+        print("\tVOUT_DAC = {}".format(data['vout_dac']))
         
     if args.parameter:
         payload = create_set_parameter(args.parameter)
