@@ -97,7 +97,7 @@ class tty_interface(comm_interface):
         self._if_name = if_name
 
     def open(self):
-        self._port_handle = serial.Serial(baudrate = 9600, timeout = 1.0)
+        self._port_handle = serial.Serial(baudrate = 115200, timeout = 1.0)
         self._port_handle.port = self._if_name
         self._port_handle.open()
         return True
