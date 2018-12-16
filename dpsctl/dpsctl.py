@@ -97,7 +97,7 @@ class tty_interface(comm_interface):
         self._if_name = if_name
 
     def open(self):
-        self._port_handle = serial.Serial(baudrate = 115200, timeout = 1.0)
+        self._port_handle = serial.Serial(baudrate = 9600, timeout = 1.0)
         self._port_handle.port = self._if_name
         self._port_handle.open()
         return True
@@ -522,150 +522,128 @@ Run DPS calibration prompts
 """
 def do_calibration(comms,args):
     data = communicate(comms, create_cmd(cmd_cal_report), args)
-    print("Previous Calibration Constants:\r\n \
-    {} = {}\r\n \
-    {} = {}\r\n \
-    {} = {}\r\n \
-    {} = {}\r\n \
-    {} = {}\r\n \
-    {} = {}\r\n \
-    {} = {}\r\n \
-    {} = {}\r\n \
-    {} = {}\r\n \
-    {} = {}\r\n".format(
-    "A_ADC_K",data['cal']['A_ADC_K'][0],
-    "A_ADC_C",data['cal']['A_ADC_C'][0],
-    "A_DAC_K",data['cal']['A_DAC_K'][0],
-    "A_DAC_C",data['cal']['A_DAC_C'][0],
-    "V_ADC_K",data['cal']['V_DAC_K'][0],
-    "V_ADC_C",data['cal']['V_DAC_C'][0],
-    "V_DAC_K",data['cal']['V_DAC_K'][0],
-    "V_DAC_C",data['cal']['V_DAC_C'][0],
-    "VIN_ADC_K",data['cal']['VIN_ADC_K'][0],
-    "VIN_ADC_C",data['cal']['VIN_ADC_C'][0]))
     
-    print("Please ensure nothing is hooked up to the DPS before starting calibration\r\n")
+    print("To restore the device to factory default calibration please use dpsctl.py --init\r\n")
+    print("Please ensure nothing is connected to the output of the DPS before starting calibration!\r\n")
     
-    t = raw_input("Perform Input Voltage Calibration? (Y/n): ")
-    if t.lower() != 'n' or t.lower() == 'y':
-        print("You will need an accurate method of measuring voltage, Such as a multimeter.")
-        print("You will need an accurate method of generating 2 stable input voltages.")
-        print("please type results in in mV, EG 1V = 1000 mV")
-        print("###########################################################")
-        #Do First voltage hookup, We need the adc values, hopefully
-        #peoples computers assign consistent serial ports/IP's
-        print("Please hook up the first lower supply voltage to the DPS now \r\n \
-        ensuring that the serial connection is connected after boot")
-        v1 = float(raw_input("Type input voltage in mV: "))
-        data1 = communicate(comms, create_cmd(cmd_cal_report), args)
-        #Do second Voltage Hookup
-        print("Please hook up the Second higher supply voltage to the DPS now \r\n \
-        ensuring that the serial connection is connected after boot")
-        v2 = float(raw_input("Type input voltage in mV: "))
-        data2 = communicate(comms, create_cmd(cmd_cal_report), args)
-        
-        #Math out the calibration constants
-        k_adc = (v1-v2)/(data1['vin_adc']-data2['vin_adc'])
-        c_adc = v1-k_adc*data1['vin_adc']
-        
-        args.calibration_args = ['VIN_ADC_K={}'.format(k_adc),
-                                'VIN_ADC_C={}'.format(c_adc)]
-
-        payload = create_set_calibration(args.calibration_args)
-        if payload:
-            communicate(comms,payload,args)
-        print("Input Voltage Calibration Complete")
-        
-        
-    t = raw_input("Perform Output Voltage Calibration? (Y/n): ")
-    if t.lower() != 'n' or t.lower() == 'y':
-        print("You will need an accurate method of measuring voltage, Such as a multimeter.")
-        print("please type results in in mV, EG 1V = 1000 mV")
-        max_v = float(raw_input("DPS input voltage: "))
-        print("Cal Point 1, 10% of Max")
-        args.parameter = ["voltage={}".format(max_v*.1),"current=1000"]
-        payload = create_set_parameter(args.parameter)
-        #start with 10% of Max
-        if payload:
-            communicate(comms, payload, args)
-        communicate(comms, create_enable_output("on"), args)             
-        c1 = float(raw_input("Measured Voltage: "))
-        c1_data = communicate(comms, create_cmd(cmd_cal_report), args)
-        
-        print("Cal Point 2, 90% of Max")
-        args.parameter = ["voltage={}".format(max_v*.9)]
-        payload = create_set_parameter(args.parameter)
-        if payload:
-            communicate(comms, payload, args)
-        c2 = float(raw_input("Measured Voltage: "))
-        c2_data = communicate(comms, create_cmd(cmd_cal_report), args)
-        communicate(comms, create_enable_output("off"), args)             
-        k_dac = (c1_data['vout_dac']-c2_data['vout_dac'])/(c1-c2)
-        c_dac = c1_data['vout_dac']-k_dac*c1
-        k_adc = (c1-c2)/(c1_data['vout_adc']-c2_data['vout_adc'])
-        c_adc = c1-k_adc*c1_data['vout_adc']
-        
-        args.calibration_args = ['V_DAC_K={}'.format(k_dac),
-                                'V_DAC_C={}'.format(c_dac),
-                                'V_ADC_K={}'.format(k_adc),
-                                'V_ADC_C={}'.format(c_adc)]
-        print(args.calibration_args)
-        payload = create_set_calibration(args.calibration_args)
-        if payload:
-            communicate(comms,payload,args)
-        print("Output Voltage Calibration Complete")
-        
-        
-        
-        
-    t = raw_input("Perform Output Current Calibration? (Y/n): ")
-    if t.lower() != 'n' or t.lower() == 'y':
-        print("You will need an accurate method of measuring resistors, Such as a multimeter.")
-        print("You will need 2 known loads, capable of handling the required power.")
-        print("please type results in ohms")
-        max_v = float(raw_input("DPS input voltage in mV: "))
-        max_a = float(raw_input("DPS max Amperage in mA: "))
-        print("Cal Point, {}mV".format(max_v*.5))
-        communicate(comms, create_enable_output("off"), args)
-        
-        c1 = float(raw_input("1st load Measured Resitance: "))
-        args.parameter = ["voltage={}".format(max_v*.5),"current={}".format(max_a)]
-        payload = create_set_parameter(args.parameter)
-        if payload:
-            communicate(comms, payload, args)          
-        
-        raw_input("Please hook up load to DPS, Then press enter")
-        communicate(comms, create_enable_output("on"), args)   
-        os.sleep(.5) #wait for DPS to settle
-        c1_data = communicate(comms, create_cmd(cmd_cal_report), args)
-        communicate(comms, create_enable_output("off"), args)
-        
-        print("Cal Point 2, {}mV".format(max_v*.5))
-        c2 = float(raw_input("2nd load Measured Resitance: "))
-        args.parameter = ["voltage={}".format(max_v*.5),"current={}".format(max_a)]
-        payload = create_set_parameter(args.parameter)
-        if payload:
-            communicate(comms, payload, args)          
-        
-        raw_input("Please hook up load to DPS, Then press enter")
-        communicate(comms, create_enable_output("on"), args)   
-        os.sleep(.5) #wait for DPS to settle
-        c2_data = communicate(comms, create_cmd(cmd_cal_report), args)
-        communicate(comms, create_enable_output("off"), args)
-        
-        k_adc = (c1-c2)/(c1_data['iout_adc']-c2_data['iout_adc'])
-        c_adc = c1-k_adc*c1_data['iout_adc']
-        
-        args.calibration_args = ['I_ADC_K={}'.format(k_dac),
-                                'I_ADC_C={}'.format(c_dac)]
-        payload = create_set_calibration(args.calibration_args)
-        if payload:
-            communicate(comms,payload,args)
+    t = raw_input("Perform Input Voltage Calibration? (y/n): ")
+    if t.lower() == 'y':
+        print("You will need an accurate method of measuring voltage, such as a multimeter")
+        print("You will need an accurate method of generating 2 stable input voltages\r\n")
+        t = raw_input("Proceed (y/n): ")
+        if t.lower() == 'y':
+            #Do First voltage hookup, We need the adc values, hopefully
+            #peoples computers assign consistent serial ports/IP's
+            print("Please hook up the first lower supply voltage to the DPS now")
+            print("ensuring that the serial connection is connected after boot")
+            v1 = float(raw_input("Type input voltage in mV: "))
+            data1 = communicate(comms, create_cmd(cmd_cal_report), args)
+            #Do second Voltage Hookup
+            print("Please hook up the second higher supply voltage to the DPS now")
+            print("ensuring that the serial connection is connected after boot")
+            v2 = float(raw_input("Type input voltage in mV: "))
+            data2 = communicate(comms, create_cmd(cmd_cal_report), args)
             
-        print(k_adc,c_adc,k_dac,c_dac)
+            #Math out the calibration constants
+            k_adc = (v1-v2)/(data1['vin_adc']-data2['vin_adc'])
+            c_adc = v1-k_adc*data1['vin_adc']
+            
+            args.calibration_args = ['VIN_ADC_K={}'.format(k_adc),
+                                    'VIN_ADC_C={}'.format(c_adc)]
+    
+            payload = create_set_calibration(args.calibration_args)
+            if payload:
+                communicate(comms,payload,args)
+            print("Input Voltage Calibration Complete")
         
-    t = raw_input("Perform Constant Current Calibration? (Y/n): ")
-    if t.lower() != 'n' or t.lower() == 'y':
+    t = raw_input("Perform Output Voltage Calibration? (y/n): ")
+    if t.lower() == 'y':
+        print("You will need an accurate method of measuring voltage, such as a multimeter\r\n")
+        t = raw_input("Proceed (y/n): ")
+        if t.lower() == 'y':
+            max_v = float(raw_input("DPS supply voltage in mV: "))
+            print("Cal Point 1, 10% of Max")
+            args.parameter = ["voltage={}".format(max_v*.1),"current=1000"]
+            payload = create_set_parameter(args.parameter)
+            #start with 10% of Max
+            if payload:
+                communicate(comms, payload, args)
+            communicate(comms, create_enable_output("on"), args)
+            c1 = float(raw_input("Measured voltage on output in mV: "))
+            c1_data = communicate(comms, create_cmd(cmd_cal_report), args)
+            
+            print("Cal Point 2, 90% of Max")
+            args.parameter = ["voltage={}".format(max_v*.9)]
+            payload = create_set_parameter(args.parameter)
+            if payload:
+                communicate(comms, payload, args)
+            c2 = float(raw_input("Measured voltage on output in mV: "))
+            c2_data = communicate(comms, create_cmd(cmd_cal_report), args)
+            communicate(comms, create_enable_output("off"), args)
+            k_dac = (c1_data['vout_dac']-c2_data['vout_dac'])/(c1-c2)
+            c_dac = c1_data['vout_dac']-k_dac*c1
+            k_adc = (c1-c2)/(c1_data['vout_adc']-c2_data['vout_adc'])
+            c_adc = c1-k_adc*c1_data['vout_adc']
+            
+            args.calibration_args = ['V_DAC_K={}'.format(k_dac),
+                                    'V_DAC_C={}'.format(c_dac),
+                                    'V_ADC_K={}'.format(k_adc),
+                                    'V_ADC_C={}'.format(c_adc)]
+            payload = create_set_calibration(args.calibration_args)
+            if payload:
+                communicate(comms,payload,args)
+            print("Output Voltage Calibration Complete")
+        
+    t = raw_input("Perform Output Current Calibration? (y/n): ")
+    if t.lower() == 'y':
+        print("You will need an accurate method of measuring resistors, Such as a multimeter")
+        print("You will need 2 known loads, capable of handling the required power\r\n")
+        t = raw_input("Proceed (y/n): ")
+        if t.lower() == 'y':
+            print("please type results in ohms")
+            max_v = float(raw_input("DPS input voltage in mV: "))
+            max_a = float(raw_input("DPS max Amperage in mA: "))
+            print("Cal Point, {}mV".format(max_v*.5))
+            communicate(comms, create_enable_output("off"), args)
+            
+            c1 = float(raw_input("1st load Measured Resitance: "))
+            args.parameter = ["voltage={}".format(max_v*.5),"current={}".format(max_a)]
+            payload = create_set_parameter(args.parameter)
+            if payload:
+                communicate(comms, payload, args)
+            
+            raw_input("Please connect load to the output of the DPS, then press enter")
+            communicate(comms, create_enable_output("on"), args)   
+            os.sleep(.5) #wait for DPS to settle
+            c1_data = communicate(comms, create_cmd(cmd_cal_report), args)
+            communicate(comms, create_enable_output("off"), args)
+            
+            print("Cal Point 2, {}mV".format(max_v*.5))
+            c2 = float(raw_input("2nd load Measured Resitance: "))
+            args.parameter = ["voltage={}".format(max_v*.5),"current={}".format(max_a)]
+            payload = create_set_parameter(args.parameter)
+            if payload:
+                communicate(comms, payload, args)
+            
+            raw_input("Please connect load to the output of the DPS, then press enter")
+            communicate(comms, create_enable_output("on"), args)
+            os.sleep(.5) #wait for DPS to settle
+            c2_data = communicate(comms, create_cmd(cmd_cal_report), args)
+            communicate(comms, create_enable_output("off"), args)
+            
+            k_adc = (c1-c2)/(c1_data['iout_adc']-c2_data['iout_adc'])
+            c_adc = c1-k_adc*c1_data['iout_adc']
+            
+            args.calibration_args = ['I_ADC_K={}'.format(k_dac),
+                                    'I_ADC_C={}'.format(c_dac)]
+            payload = create_set_calibration(args.calibration_args)
+            if payload:
+                communicate(comms,payload,args)
+                
+            print(k_adc,c_adc,k_dac,c_dac)
+        
+    t = raw_input("Perform Constant Current Calibration? (y/n): ")
+    if t.lower() == 'y':
         pass
         
 """
