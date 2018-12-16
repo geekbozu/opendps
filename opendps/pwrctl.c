@@ -35,16 +35,16 @@
   */
 
 static uint32_t i_out, v_out, i_limit;
-float A_ADC_K_COEF = A_ADC_K;
-float A_ADC_C_COEF = A_ADC_C;
-float A_DAC_K_COEF = A_DAC_K;
-float A_DAC_C_COEF = A_DAC_C;
-float V_ADC_K_COEF = V_ADC_K;
-float V_ADC_C_COEF = V_ADC_C;
-float V_DAC_K_COEF = V_DAC_K;
-float V_DAC_C_COEF = V_DAC_C;
-float VIN_ADC_K_COEF = VIN_ADC_K;
-float VIN_ADC_C_COEF = VIN_ADC_C;
+float a_adc_k_coef = A_ADC_K;
+float a_adc_c_coef = A_ADC_C;
+float a_dac_k_coef = A_DAC_K;
+float a_dac_c_coef = A_DAC_C;
+float v_adc_k_coef = V_ADC_K;
+float v_adc_c_coef = V_ADC_C;
+float v_dac_k_coef = V_DAC_K;
+float v_dac_c_coef = V_DAC_C;
+float vin_adc_k_coef = VIN_ADC_K;
+float vin_adc_c_coef = VIN_ADC_C;
 static bool v_out_enabled;
 
 /** not static as it is referred to from hw.c for performance reasons */
@@ -63,72 +63,72 @@ void pwrctl_init(past_t *past)
     uint32_t length;
     if (past_read_unit(past, cal_A_ADC_K, (const void**) &p, &length))
     {
-        A_ADC_K_COEF = *p;
+        a_adc_k_coef = *p;
     } else {
-        A_ADC_K_COEF = A_ADC_K;
+        a_adc_k_coef = A_ADC_K;
     }
 
     if (past_read_unit(past, cal_A_ADC_C,(const void**) &p, &length))
     {
-        A_ADC_C_COEF = *p;
+        a_adc_c_coef = *p;
     } else {
-        A_ADC_C_COEF = A_ADC_C;
+        a_adc_c_coef = A_ADC_C;
     }
     
     if (past_read_unit(past, cal_A_DAC_K, (const void**) &p, &length))
     {
-        A_DAC_K_COEF = *p;
+        a_dac_k_coef = *p;
     } else {
-        A_DAC_K_COEF = A_DAC_K;
+        a_dac_k_coef = A_DAC_K;
     }
     
     if (past_read_unit(past, cal_A_DAC_C,(const void**) &p, &length))
     {
-        A_DAC_C_COEF = *p;
+        a_dac_c_coef = *p;
     } else {
-        A_DAC_C_COEF = A_DAC_C;
+        a_dac_c_coef = A_DAC_C;
     }
     
     if (past_read_unit(past, cal_V_ADC_K, (const void**) &p, &length))
     {
-        V_ADC_K_COEF = *p;
+        v_adc_k_coef = *p;
     } else {
-        V_ADC_K_COEF = V_ADC_K;
+        v_adc_k_coef = V_ADC_K;
     }
     
     if (past_read_unit(past, cal_V_ADC_C,(const void**) &p, &length))
     {
-        V_ADC_C_COEF = *p;
+        v_adc_c_coef = *p;
     } else {
-        V_ADC_C_COEF = V_ADC_C;
+        v_adc_c_coef = V_ADC_C;
     }
     
     if (past_read_unit(past, cal_V_DAC_K, (const void**) &p, &length))
     {
-        V_DAC_K_COEF = *p;
+        v_dac_k_coef = *p;
     } else {
-        V_DAC_K_COEF = V_DAC_K;
+        v_dac_k_coef = V_DAC_K;
     }
     
     if (past_read_unit(past, cal_V_DAC_C,(const void**) &p, &length))
     {
-        V_DAC_C_COEF = *p;
+        v_dac_c_coef = *p;
     } else {
-        V_DAC_C_COEF = V_DAC_C;
+        v_dac_c_coef = V_DAC_C;
     }
     
     if (past_read_unit(past, cal_VIN_ADC_K,(const void**) &p, &length))
     {
-        VIN_ADC_K_COEF = *p;
+        vin_adc_k_coef = *p;
     } else {
-        VIN_ADC_K_COEF = VIN_ADC_K;
+        vin_adc_k_coef = VIN_ADC_K;
     }
     
     if (past_read_unit(past, cal_VIN_ADC_C,(const void**) &p, &length))
     {
-        VIN_ADC_C_COEF = *p;
+        vin_adc_c_coef = *p;
     } else {
-        VIN_ADC_C_COEF = VIN_ADC_C;
+        vin_adc_c_coef = VIN_ADC_C;
     }
 
     pwrctl_enable_vout(false);
@@ -256,7 +256,7 @@ bool pwrctl_vout_enabled(void)
   */
 uint32_t pwrctl_calc_vin(uint16_t raw)
 {
-    return VIN_ADC_K_COEF*raw + VIN_ADC_C_COEF; /** @todo: Determine if we still need to trim. */
+    return vin_adc_k_coef*raw + vin_adc_c_coef; /** @todo: Determine if we still need to trim. */
 }
 
 /**
@@ -266,7 +266,7 @@ uint32_t pwrctl_calc_vin(uint16_t raw)
   */
 uint32_t pwrctl_calc_vout(uint16_t raw)
 {
-    return V_ADC_K_COEF*raw + V_ADC_C_COEF;
+    return v_adc_k_coef*raw + v_adc_c_coef;
 }
 
 /**
@@ -276,7 +276,7 @@ uint32_t pwrctl_calc_vout(uint16_t raw)
   */
 uint16_t pwrctl_calc_vout_dac(uint32_t v_out_mv)
 {
-    uint32_t dac = V_DAC_K_COEF*v_out_mv + V_DAC_C_COEF;
+    uint32_t dac = v_dac_k_coef*v_out_mv + v_dac_c_coef;
     return dac & 0xfff; /** 12 bits */
 }
 
@@ -287,7 +287,7 @@ uint16_t pwrctl_calc_vout_dac(uint32_t v_out_mv)
   */
 uint32_t pwrctl_calc_iout(uint16_t raw)
 {
-    return A_ADC_K_COEF*raw + A_ADC_C_COEF;
+    return a_adc_k_coef*raw + a_adc_c_coef;
 }
 
 /**
@@ -297,7 +297,7 @@ uint32_t pwrctl_calc_iout(uint16_t raw)
   */
 uint16_t pwrctl_calc_ilimit_adc(uint16_t i_limit_ma)
 {
-    return (i_limit_ma - A_ADC_C_COEF) / A_ADC_K_COEF + 1;
+    return (i_limit_ma - a_adc_c_coef) / a_adc_k_coef + 1;
 }
 
 /**
@@ -309,7 +309,7 @@ uint16_t pwrctl_calc_ilimit_adc(uint16_t i_limit_ma)
   */
 uint16_t pwrctl_calc_iout_dac(uint32_t i_out_ma)
 {
-    uint32_t dac = A_DAC_K_COEF * i_out_ma + A_DAC_C_COEF;
+    uint32_t dac = a_dac_k_coef * i_out_ma + a_dac_c_coef;
     return dac & 0xfff; /** 12 bits */
 }
 
