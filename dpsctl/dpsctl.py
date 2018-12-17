@@ -332,6 +332,10 @@ def handle_response(command, frame, args):
         pass
     elif resp_command == cmd_lock:
         pass
+    elif resp_command == cmd_set_calibration:
+        pass
+    elif resp_command == cmd_init:
+        pass
     else:
         print("Unknown response %d from device." % (resp_command))
 
