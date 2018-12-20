@@ -617,7 +617,7 @@ def do_calibration(comms,args):
             
             raw_input("Please connect load to the output of the DPS, then press enter")
             communicate(comms, create_enable_output("on"), args)   
-            time.sleep(.5) #wait for DPS to settle
+            time.sleep(2) #wait for DPS to settle
             c1_data = communicate(comms, create_cmd(cmd_cal_report), args)
             communicate(comms, create_enable_output("off"), args)
             
@@ -630,7 +630,7 @@ def do_calibration(comms,args):
             
             raw_input("Please connect load to the output of the DPS, then press enter")
             communicate(comms, create_enable_output("on"), args)
-            time.sleep(.5) #wait for DPS to settle
+            time.sleep(2) #wait for DPS to settle
             c2_data = communicate(comms, create_cmd(cmd_cal_report), args)
             communicate(comms, create_enable_output("off"), args)
             
@@ -642,12 +642,10 @@ def do_calibration(comms,args):
             payload = create_set_calibration(args.calibration_args)
             if payload:
                 communicate(comms,payload,args)
-                
-            print(k_adc,c_adc)
         
     t = raw_input("Perform Constant Current Calibration? (y/n): ")
     if t.lower() == 'y':
-        pass
+        print("NOT IMPLEMENTED")
         
 """
 Create and return a comminications interface object or None if no comms if
