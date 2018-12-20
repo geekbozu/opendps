@@ -604,13 +604,12 @@ def do_calibration(comms,args):
         print("You will need 2 known loads, capable of handling the required power\r\n")
         t = raw_input("Proceed (y/n): ")
         if t.lower() == 'y':
-            print("please type results in ohms")
             max_v = float(raw_input("DPS input voltage in mV: "))
             max_a = float(raw_input("DPS max Amperage in mA: "))
             print("Cal Point, {}mV".format(max_v*.5))
             communicate(comms, create_enable_output("off"), args)
             
-            c1 = float(raw_input("1st load Measured Resitance: "))
+            c1 = float(raw_input("1st load resistance in ohms: "))
             args.parameter = ["voltage={}".format(max_v*.5),"current={}".format(max_a)]
             payload = create_set_parameter(args.parameter)
             if payload:
@@ -618,12 +617,12 @@ def do_calibration(comms,args):
             
             raw_input("Please connect load to the output of the DPS, then press enter")
             communicate(comms, create_enable_output("on"), args)   
-            os.sleep(.5) #wait for DPS to settle
+            time.sleep(.5) #wait for DPS to settle
             c1_data = communicate(comms, create_cmd(cmd_cal_report), args)
             communicate(comms, create_enable_output("off"), args)
             
             print("Cal Point 2, {}mV".format(max_v*.5))
-            c2 = float(raw_input("2nd load Measured Resitance: "))
+            c2 = float(raw_input("2nd load resistance in ohms: "))
             args.parameter = ["voltage={}".format(max_v*.5),"current={}".format(max_a)]
             payload = create_set_parameter(args.parameter)
             if payload:
@@ -631,20 +630,20 @@ def do_calibration(comms,args):
             
             raw_input("Please connect load to the output of the DPS, then press enter")
             communicate(comms, create_enable_output("on"), args)
-            os.sleep(.5) #wait for DPS to settle
+            time.sleep(.5) #wait for DPS to settle
             c2_data = communicate(comms, create_cmd(cmd_cal_report), args)
             communicate(comms, create_enable_output("off"), args)
             
             k_adc = (c1-c2)/(c1_data['iout_adc']-c2_data['iout_adc'])
             c_adc = c1-k_adc*c1_data['iout_adc']
             
-            args.calibration_args = ['I_ADC_K={}'.format(k_dac),
-                                    'I_ADC_C={}'.format(c_dac)]
+            args.calibration_args = ['I_ADC_K={}'.format(k_adc),
+                                    'I_ADC_C={}'.format(c_adc)]
             payload = create_set_calibration(args.calibration_args)
             if payload:
                 communicate(comms,payload,args)
                 
-            print(k_adc,c_adc,k_dac,c_dac)
+            print(k_adc,c_adc)
         
     t = raw_input("Perform Constant Current Calibration? (y/n): ")
     if t.lower() == 'y':
