@@ -615,7 +615,7 @@ def do_calibration(comms,args):
     communicate(comms, create_enable_output("off"), args)
 
     load_resistance = float(raw_input("Load resistance in ohms: "))
-    print('Load must be rated for at least {} watts!'.format(round(float(v2*v2)/load_resistance),1))
+    print('Load must be rated for at least {} watts!'.format(round(float((v2/1000)*(v2/1000))/load_resistance),1))
     raw_input("Please connect load to the output of the DPS, then press enter")
 
     # Take 10 current readings at different voltages and construct an Iout vs Iadc array
