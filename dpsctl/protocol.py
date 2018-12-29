@@ -246,16 +246,16 @@ def unpack_cal_report(uframe):
     data['iout_adc'] = uframe.unpack16()
     data['iout_dac'] = uframe.unpack16()
     data['vout_dac'] = uframe.unpack16()
-    data['cal']['A_ADC_K'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))
-    data['cal']['A_ADC_C'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))
-    data['cal']['A_DAC_K'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))
-    data['cal']['A_DAC_C'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))
-    data['cal']['V_ADC_K'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))
-    data['cal']['V_ADC_C'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))
-    data['cal']['V_DAC_K'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))
-    data['cal']['V_DAC_C'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))
-    data['cal']['VIN_ADC_K'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))
-    data['cal']['VIN_ADC_C'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))
+    data['cal']['A_ADC_K'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))[0]
+    data['cal']['A_ADC_C'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))[0]
+    data['cal']['A_DAC_K'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))[0]
+    data['cal']['A_DAC_C'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))[0]
+    data['cal']['V_ADC_K'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))[0]
+    data['cal']['V_ADC_C'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))[0]
+    data['cal']['V_DAC_K'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))[0]
+    data['cal']['V_DAC_C'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))[0]
+    data['cal']['VIN_ADC_K'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))[0]
+    data['cal']['VIN_ADC_C'] = struct.unpack("<f", struct.pack("<I", uframe.unpack32()))[0]
     return data 
     
 # Returns wifi_status
