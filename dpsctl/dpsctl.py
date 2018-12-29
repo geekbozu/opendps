@@ -559,9 +559,6 @@ def do_calibration(comms,args):
     start_params = communicate(comms, create_cmd(cmd_query), args, quiet=True) # Fetch current settings so we can restore them after calibrating
     communicate(comms, create_set_function("cv"), args, quiet=True) # Ensure we're in constant voltage mode
 
-    print(start_params)
-    raw_input("Would you like to proceed? (y/n): ")
-
     print("Input Voltage Calibration:")
     #Do First voltage hookup, We need the adc values, hopefully
     #peoples computers assign consistent serial ports/IP's
