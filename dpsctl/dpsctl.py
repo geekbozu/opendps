@@ -553,7 +553,7 @@ def do_calibration(comms,args):
     print("Input Voltage Calibration:")
     #Do First voltage hookup, We need the adc values, hopefully
     #peoples computers assign consistent serial ports/IP's
-    print("\r\nPlease hook up the first lower supply voltage to the DPS now")
+    print("Please hook up the first lower supply voltage to the DPS now")
     print("ensuring that the serial connection is connected after boot")
     v1 = float(raw_input("Type input voltage in mV: "))
     data1 = communicate(comms, create_cmd(cmd_cal_report), args)
