@@ -622,7 +622,7 @@ def do_calibration(comms,args):
     max_a = float(raw_input("DPS max amperage in mA: "))
 
     load_resistance = float(raw_input("Load resistance in ohms: "))
-    print('Load must be rated for at least {} watts!'.format(round(float((v2/1000)*(v2/1000))/load_resistance),1))
+    print('Load must be rated for at least {:.1f} watts!'.format(((v2/1000)*(v2/1000))/load_resistance))
     raw_input("Please connect load to the output of the DPS, then press enter")
 
     # Take multiple current readings at different voltages and construct an Iout vs Iadc array
