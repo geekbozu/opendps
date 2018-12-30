@@ -692,10 +692,10 @@ def do_calibration(comms,args):
     # Restore the original settings
     if start_params['cur_func'] == 'cv':
         communicate(comms, create_set_function("cv"), args, quiet=True)
-        args.parameter = ["voltage={}".format(start_params['voltage']),"current={}".format(start_params['current'])]
+        args.parameter = ["voltage={}".format(start_params['params']['voltage']),"current={}".format(start_params['params']['current'])]
     if start_params['cur_func'] == 'cc':
         communicate(comms, create_set_function("cc"), args, quiet=True)
-        args.parameter = ["current={}".format(start_params['current'])]
+        args.parameter = ["current={}".format(start_params['params']['current'])]
     payload = create_set_parameter(args.parameter)
     if payload:
         communicate(comms, payload, args, quiet=True)
