@@ -22,21 +22,23 @@
  * THE SOFTWARE.
  */
 
+#ifndef __PWRCTL_H__
+#define __PWRCTL_H__
+
 #include <stdint.h>
 #include <stdbool.h>
 #include "past.h"
-#ifndef __PWRCTL_H__
-#define __PWRCTL_H__
-extern float A_ADC_K_COEF;
-extern float A_ADC_C_COEF;
-extern float A_DAC_K_COEF;
-extern float A_DAC_C_COEF;
-extern float V_ADC_K_COEF;
-extern float V_ADC_C_COEF;
-extern float V_DAC_K_COEF;
-extern float V_DAC_C_COEF;
-extern float VIN_ADC_K_COEF;
-extern float VIN_ADC_C_COEF;
+
+extern float a_adc_k_coef;
+extern float a_adc_c_coef;
+extern float a_dac_k_coef;
+extern float a_dac_c_coef;
+extern float v_adc_k_coef;
+extern float v_adc_c_coef;
+extern float v_dac_k_coef;
+extern float v_dac_c_coef;
+extern float vin_adc_k_coef;
+extern float vin_adc_c_coef;
 extern uint32_t pwrctl_i_limit_raw;
 
 /**
