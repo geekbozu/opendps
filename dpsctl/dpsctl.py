@@ -339,6 +339,10 @@ def handle_response(command, frame, args, quiet=False):
     elif resp_command == cmd_set_calibration:
         pass
     elif resp_command == cmd_init:
+        cmd = frame.unpack8()
+        status = frame.unpack8()
+        if status == 0:
+            print("Error, failed to reinitialise flash contents.")
         pass
     else:
         print("Unknown response %d from device." % (resp_command))
