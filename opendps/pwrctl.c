@@ -217,7 +217,11 @@ bool pwrctl_vout_enabled(void)
   */
 uint32_t pwrctl_calc_vin(uint16_t raw)
 {
-    return vin_adc_k_coef*raw + vin_adc_c_coef; /** @todo: Determine if we still need to trim. */
+    float value = vin_adc_k_coef * raw + vin_adc_c_coef; /** @todo: Determine if we still need to trim. */
+    if (value < 0)
+        return 0;
+    else
+        return value + 0.5f; // Add 0.5 so it is correctly rounded when it is truncated
 }
 
 /**
@@ -227,7 +231,11 @@ uint32_t pwrctl_calc_vin(uint16_t raw)
   */
 uint32_t pwrctl_calc_vout(uint16_t raw)
 {
-    return v_adc_k_coef*raw + v_adc_c_coef;
+    float value = v_adc_k_coef * raw + v_adc_c_coef;
+    if (value < 0)
+        return 0;
+    else
+        return value + 0.5f; // Add 0.5 so it is correctly rounded when it is truncated
 }
 
 /**
@@ -237,8 +245,11 @@ uint32_t pwrctl_calc_vout(uint16_t raw)
   */
 uint16_t pwrctl_calc_vout_dac(uint32_t v_out_mv)
 {
-    uint32_t dac = v_dac_k_coef*v_out_mv + v_dac_c_coef;
-    return dac & 0xfff; /** 12 bits */
+    float value = v_dac_k_coef * v_out_mv + v_dac_c_coef;
+    if (value < 0)
+        return 0;
+    else
+        return ((uint16_t)(value + 0.5f)) & 0xfff; /** 12 bits */
 }
 
 /**
@@ -248,7 +259,11 @@ uint16_t pwrctl_calc_vout_dac(uint32_t v_out_mv)
   */
 uint32_t pwrctl_calc_iout(uint16_t raw)
 {
-    return a_adc_k_coef*raw + a_adc_c_coef;
+    float value = a_adc_k_coef * raw + a_adc_c_coef;
+    if (value < 0)
+        return 0;
+    else
+        return value + 0.5f; // Add 0.5 so it is correctly rounded when it is truncated
 }
 
 /**
@@ -258,7 +273,12 @@ uint32_t pwrctl_calc_iout(uint16_t raw)
   */
 uint16_t pwrctl_calc_ilimit_adc(uint16_t i_limit_ma)
 {
-    return (i_limit_ma - a_adc_c_coef) / a_adc_k_coef + 1;
+    float value = (i_limit_ma - a_adc_c_coef) / a_adc_k_coef + 1;
+
+    if (value < 0)
+        return 0;
+    else
+        return value + 0.5f; // Add 0.5 so it is correctly rounded when it is truncated
 }
 
 /**
@@ -270,8 +290,11 @@ uint16_t pwrctl_calc_ilimit_adc(uint16_t i_limit_ma)
   */
 uint16_t pwrctl_calc_iout_dac(uint32_t i_out_ma)
 {
-    uint32_t dac = a_dac_k_coef * i_out_ma + a_dac_c_coef;
-    return dac & 0xfff; /** 12 bits */
+    float value = a_dac_k_coef * i_out_ma + a_dac_c_coef;
+    if (value < 0)
+        return 0;
+    else
+        return ((uint16_t)(value + 0.5f)) & 0xfff; /** 12 bits */
 }
 
 
