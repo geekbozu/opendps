@@ -24,11 +24,18 @@
 
 #ifndef __PASTUNITS_H__
 #define __PASTUNITS_H__
+
 /** Parameters stored in flash */
 typedef enum {
     /** stored as [I_limit:16] | [V_out:16] */
-    past_power = 1,
-    cal_A_ADC_K = 4, // It appears that something is using ID 3. See Issue #17
+    past_power = 1, // Deprecated/unused
+    /** stored as 0 or 1 */
+    past_tft_inversion,
+    /** stored as strings */
+    past_boot_git_hash, // WARN: Moving this requires a recompile and flash of DPSBoot
+    past_app_git_hash,
+    /** stored as floats */
+    cal_A_ADC_K,
     cal_A_ADC_C,
     cal_A_DAC_K,
     cal_A_DAC_C,
@@ -38,11 +45,6 @@ typedef enum {
     cal_V_ADC_C,
     cal_VIN_ADC_K,
     cal_VIN_ADC_C,
-    /** stored as 0 or 1 */
-    past_tft_inversion,
-    /** stored as strings */
-    past_boot_git_hash,
-    past_app_git_hash,
     /** A past unit who's precense indicates we have a non finished upgrade and
     must not boot */
     past_upgrade_started = 0xff
